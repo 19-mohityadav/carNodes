@@ -43,7 +43,6 @@ export default function DashboardSidebar({
     { id: 'saved', label: 'Saved Vehicles', icon: Bookmark, badge: '5' },
     { id: 'comparisons', label: 'My Comparisons', icon: GitCompare },
     { id: 'passport', label: 'Vehicle Passport', icon: FileBadge2 },
-    { id: 'ai-agent', label: 'AI Vehicle Agent', icon: Bot, isAi: true },
     { id: 'purchases', label: 'My Purchases', icon: ShoppingBag, badge: '1' },
     { id: 'transactions', label: 'Transactions', icon: CreditCard },
     { id: 'notifications', label: 'Notifications', icon: Bell },
@@ -55,7 +54,6 @@ export default function DashboardSidebar({
     { id: 'my-vehicles', label: 'My Vehicles', icon: Car, badge: '4' },
     { id: 'create-listing', label: 'Create Listing', icon: PlusCircle, isPrimary: true },
     { id: 'verification', label: 'Verification', icon: ShieldCheck },
-    { id: 'ai-pricing', label: 'AI Pricing', icon: TrendingUp, isAi: true },
     { id: 'buyer-requests', label: 'Buyer Requests', icon: MessageSquare, badge: '18' },
     { id: 'offers', label: 'Offers', icon: BadgeDollarSign, badge: '3' },
     { id: 'transactions', label: 'Transactions', icon: CreditCard },
@@ -115,9 +113,7 @@ export default function DashboardSidebar({
                 alt="carNodes"
                 className="h-9 w-auto"
               />
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold uppercase tracking-wider">
-                RWA v2.0
-              </span>
+              
             </div>
             
             {/* Mobile close button */}
@@ -133,9 +129,7 @@ export default function DashboardSidebar({
           <div className="px-5 pt-4 pb-2">
             <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
               <div>
-                <span className="text-[9px] font-mono uppercase text-slate-400 font-bold tracking-wider block">
-                  Active Workspace
-                </span>
+                
                 <span className="text-xs font-bold font-heading text-slate-900 capitalize">
                   {activeRole === 'authority' ? 'RTO Authority Node' : `${activeRole} Dashboard`}
                 </span>
@@ -191,7 +185,7 @@ export default function DashboardSidebar({
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center space-x-2">
               <span className="w-2 h-2 rounded-full bg-teal-500" />
-              <span className="text-[11px] font-mono text-slate-500">Sepolia Testnet</span>
+              <span className="text-[11px] font-mono text-slate-500">CarNodes</span>
             </div>
             <button
               onClick={onLogout}
