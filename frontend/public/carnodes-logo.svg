@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" fill="none">
+  <!-- Car silhouette outline -->
+  <path d="M 80 160 
+           C 85 155, 100 140, 130 132
+           C 155 126, 175 122, 200 120
+           C 225 118, 255 120, 275 126
+           C 295 132, 310 138, 322 148
+           C 330 154, 338 160, 340 162
+           L 340 175
+           L 80 175 Z"
+        stroke="#3D5066" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+  <!-- Windshield slope -->
+  <path d="M 130 132 C 138 128, 152 118, 170 114 C 190 110, 210 110, 228 114 C 244 118, 260 126, 275 132"
+        stroke="#3D5066" stroke-width="2" fill="none"/>
+  <!-- Front wheel arch -->
+  <path d="M 85 175 Q 112 175 112 195 Q 112 215 85 215" stroke="#3D5066" stroke-width="2" fill="none"/>
+  <!-- Rear wheel arch -->
+  <path d="M 295 175 Q 322 175 322 195 Q 322 215 295 215" stroke="#3D5066" stroke-width="2" fill="none"/>
+  <!-- Body base line -->
+  <line x1="76" y1="175" x2="340" y2="175" stroke="#3D5066" stroke-width="2"/>
+  <!-- Front bumper slope -->
+  <path d="M 80 160 C 78 162, 76 168, 76 175" stroke="#3D5066" stroke-width="2.5" fill="none"/>
+  <!-- Rear decklid/tail -->
+  <path d="M 338 160 C 340 163, 342 168, 342 175" stroke="#3D5066" stroke-width="2.5" fill="none"/>
+  
+  <!-- carNodes text: "car" in gold, "Nodes" in dark slate -->
+  <text x="145" y="225" font-family="Georgia, serif" font-size="38" font-weight="400" fill="#B89B5E" letter-spacing="1">car</text>
+  <text x="215" y="225" font-family="Georgia, serif" font-size="38" font-weight="600" fill="#3D5066" letter-spacing="1">Nodes</text>
+</svg>

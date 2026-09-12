@@ -1,122 +1,177 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import { VEHICLES } from './data/vehicles';
+import Navbar from './components/Navbar';
+import HeroShowroom from './components/HeroShowroom';
+import TrustStrip from './components/TrustStrip';
+import ComparisonMatrix from './components/ComparisonMatrix';
+import HowItWorks from './components/HowItWorks';
+import VehiclePassportSection from './components/VehiclePassportSection';
+import AiAssistantSection from './components/AiAssistantSection';
+import EscrowSection from './components/EscrowSection';
+import StakeholdersSection from './components/StakeholdersSection';
+import TechStackSection from './components/TechStackSection';
+import ImpactVisionSection from './components/ImpactVisionSection';
+import FooterCTA from './components/FooterCTA';
 
-function App() {
-  const [count, setCount] = useState(0)
+import LoginModal from './components/LoginModal';
+import MarketplaceModal from './components/MarketplaceModal';
+import ListVehicleModal from './components/ListVehicleModal';
+import VerifyVinModal from './components/VerifyVinModal';
+import DashboardLayout from './components/dashboard/DashboardLayout';
+
+export default function App() {
+  const [activeCarIndex, setActiveCarIndex] = useState(0);
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // View States (Landing vs Dashboards)
+  const [isDashboardView, setIsDashboardView] = useState(false);
+  const [dashboardRole, setDashboardRole] = useState('buyer');
+
+  // Modal States
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [authMode, setAuthMode] = useState('signup'); // 'signup' | 'signin'
+  const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+
+  const handleOpenAuth = (mode = 'signup') => {
+    setAuthMode(mode);
+    setIsLoginOpen(true);
+  };
+
+  const handleOpenDashboard = (role = 'buyer') => {
+    setDashboardRole(role);
+    setIsDashboardView(true);
+  };
+
+  const handleConnected = (provider, address, userObj) => {
+    setWalletConnected(true);
+    setWalletAddress(address);
+    if (userObj) {
+      setCurrentUser(userObj);
+      setDashboardRole(userObj.role || 'buyer');
+      setIsDashboardView(true); // Open dashboard automatically upon login/signup!
+    }
+  };
+
+  const handleLogout = () => {
+    setWalletConnected(false);
+    setWalletAddress('');
+    setCurrentUser(null);
+    setIsDashboardView(false);
+  };
+
+  if (isDashboardView) {
+    return (
+      <DashboardLayout
+        vehicles={VEHICLES}
+        initialRole={currentUser?.role || dashboardRole}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onReturnToHome={() => setIsDashboardView(false)}
+      />
+    );
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2B2521] selection:bg-[#FF3B30] selection:text-white font-sans antialiased">
 
-      <div className="ticks"></div>
+      {/* 1. NAVBAR — logo, 3 nav links, Role Dashboards, Login + Get Started */}
+      <Navbar
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onOpenLogin={() => handleOpenAuth('signin')}
+        onOpenGetStarted={() => handleOpenAuth('signup')}
+        onOpenMarketplace={() => setIsMarketplaceOpen(true)}
+        onOpenDashboard={handleOpenDashboard}
+      />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      <main>
+        {/* 2. HERO SHOWROOM — 3D CSS orbit carousel */}
+        <HeroShowroom
+          vehicles={VEHICLES}
+          activeIndex={activeCarIndex}
+          onSelectVehicle={(idx) => setActiveCarIndex(idx)}
+          onOpenMarketplace={() => setIsMarketplaceOpen(true)}
+          onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
+        />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {/* 3. TRUST STRIP — 4 cards (AI Assisted removed) */}
+        <TrustStrip />
+
+        {/* 4. COMPARISON MATRIX */}
+        <ComparisonMatrix />
+
+        {/* 5. HOW IT WORKS */}
+        <HowItWorks />
+
+        {/* 6. DIGITAL VEHICLE PASSPORT */}
+        <VehiclePassportSection activeCar={VEHICLES[activeCarIndex]} />
+
+        {/* 7. AI AGENT ASSISTANT */}
+        <AiAssistantSection
+          onOpenMarketplace={() => setIsMarketplaceOpen(true)}
+          onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
+        />
+
+        {/* 8. ESCROW SECTION */}
+        <EscrowSection onOpenWalletModal={() => handleOpenAuth('signin')} />
+
+        {/* 9. STAKEHOLDERS */}
+        <StakeholdersSection
+          onOpenMarketplace={() => setIsMarketplaceOpen(true)}
+          onOpenListModal={() => setIsListModalOpen(true)}
+          onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
+        />
+
+        {/* 10. TECH STACK */}
+        <TechStackSection />
+
+        {/* 11. IMPACT & VISION */}
+        <ImpactVisionSection />
+      </main>
+
+      {/* 12. FOOTER CTA */}
+      <FooterCTA
+        onOpenMarketplace={() => setIsMarketplaceOpen(true)}
+        onOpenListModal={() => setIsListModalOpen(true)}
+        onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
+      />
+
+      {/* MODALS */}
+      <LoginModal
+        key={authMode}
+        isOpen={isLoginOpen}
+        initialMode={authMode}
+        onClose={() => setIsLoginOpen(false)}
+        onConnected={handleConnected}
+      />
+
+      <MarketplaceModal
+        isOpen={isMarketplaceOpen}
+        onClose={() => setIsMarketplaceOpen(false)}
+        vehicles={VEHICLES}
+        onSelectVehicle={(car) => {
+          const idx = VEHICLES.findIndex((v) => v.id === car.id);
+          if (idx !== -1) setActiveCarIndex(idx);
+        }}
+        onOpenWalletModal={() => setIsLoginOpen(true)}
+        walletConnected={walletConnected}
+      />
+
+      <ListVehicleModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        onOpenWalletModal={() => setIsLoginOpen(true)}
+        walletConnected={walletConnected}
+      />
+
+      <VerifyVinModal
+        isOpen={isVerifyModalOpen}
+        onClose={() => setIsVerifyModalOpen(false)}
+      />
+    </div>
+  );
 }
-
-export default App
