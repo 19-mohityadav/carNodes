@@ -217,6 +217,14 @@ code, pre, .mono {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+}
+
+.pedestal-glow {
+  animation: pedestalPulse 6s ease-in-out infinite;
 }
 
 /* — 12. Nav Slide Animation (text slides out, red slides in) */
