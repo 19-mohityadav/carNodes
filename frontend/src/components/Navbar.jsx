@@ -55,14 +55,14 @@ export function Navbar() {
         {/* Right CTA Actions */}
         <div className="hidden md:flex items-center gap-4">
           <Link
-            to="/connect"
-            className="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition-colors px-3 py-2"
+            to="/login"
+            className="text-sm font-semibold text-slate-700 hover:text-[#0F766E] transition-colors px-3 py-2"
           >
             Login
           </Link>
           <Link
-            to="/marketplace"
-            className="inline-flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm hover:bg-indigo-700 active:scale-95 transition-all duration-200"
+            to="/register"
+            className="inline-flex items-center gap-2 bg-[#0F766E] text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow-sm hover:bg-[#0D645E] active:scale-95 transition-all duration-200"
           >
             Get Started
             <ArrowRight className="w-4 h-4" />
@@ -105,16 +105,16 @@ export function Navbar() {
           </a>
           <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
             <Link
-              to="/connect"
+              to="/login"
               onClick={() => setMobileOpen(false)}
               className="w-full text-center py-2.5 text-slate-700 font-semibold text-sm hover:bg-slate-50 rounded-xl"
             >
               Login
             </Link>
             <Link
-              to="/marketplace"
+              to="/register"
               onClick={() => setMobileOpen(false)}
-              className="w-full text-center py-2.5 bg-indigo-600 text-white font-semibold text-sm rounded-xl shadow-sm hover:bg-indigo-700"
+              className="w-full text-center py-2.5 bg-[#0F766E] text-white font-semibold text-sm rounded-xl shadow-sm hover:bg-[#0D645E]"
             >
               Get Started
             </Link>

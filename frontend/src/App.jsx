@@ -4,6 +4,8 @@ import { RoleProvider } from './context/RoleContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/layout/Footer';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import Marketplace from './pages/Marketplace';
 import VehicleDetail from './pages/VehicleDetail';
 import Passport from './pages/Passport';
@@ -27,6 +29,10 @@ export default function App() {
               <Routes>
                 {/* Home Landing Page with Hero */}
                 <Route path="/" element={<Home />} />
+
+                {/* Authentication Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
 
                 {/* 02. Marketplace Browse & Search */}
                 <Route path="/marketplace" element={<Marketplace />} />
