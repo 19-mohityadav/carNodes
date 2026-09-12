@@ -1,0 +1,10 @@
+{
+  "deployer": "0xAeA9091619a754FC458fb3530628C036051C3f30",
+  "contracts": {
+    "VehiclePassport": "0x1e13F6e6AAf5689C113D2C42af447021E096f107",
+    "VehicleRegistry": "0x8C7509fa6D8daf125B2527B2f830C2822b38045E",
+    "VehicleEscrow": "0x4DDd74250A0bBC496E1a7E9C3f7a775149DbF554",
+    "MockINR": "0xc4FB102f9C93303091A16ab79297CDeEbE72Be7f"
+  },
+  "deployedAt": "2026-09-12T08:16:47.744Z"
+}
