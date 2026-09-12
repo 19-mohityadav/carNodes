@@ -1,122 +1,78 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { WalletProvider } from './context/WalletContext';
+import { RoleProvider } from './context/RoleContext';
+import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
 
-function App() {
-  const [count, setCount] = useState(0)
+// 12 Demo Pages for Hackathon Walkthrough
+import Landing from './pages/Landing';
+import Marketplace from './pages/Marketplace';
+import VehicleDetail from './pages/VehicleDetail';
+import Passport from './pages/Passport';
+import CreateListing from './pages/CreateListing';
+import Purchase from './pages/Purchase';
+import Escrow from './pages/Escrow';
+import OwnershipTransfer from './pages/OwnershipTransfer';
+import AuthorityDashboard from './pages/AuthorityDashboard';
+import AIAnalysis from './pages/AIAnalysis';
+import TxHistory from './pages/TxHistory';
+import ConnectWallet from './pages/ConnectWallet';
 
+export default function App() {
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <BrowserRouter>
+      <WalletProvider>
+        <RoleProvider>
+          <div className="flex flex-col min-h-screen bg-swiss-white text-swiss-black selection:bg-swiss-accent selection:text-swiss-white">
+            <Navbar />
+            <main className="flex-1">
+              <Routes>
+                {/* 01. Landing Hero & Protocol Overview */}
+                <Route path="/" element={<Landing />} />
 
-      <div className="ticks"></div>
+                {/* 02. Marketplace Browse & Search */}
+                <Route path="/marketplace" element={<Marketplace />} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+                {/* 03. Vehicle Detail & Tabbed Specs */}
+                <Route path="/vehicle/:id" element={<VehicleDetail />} />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+                {/* 04. Printable Digital Passport & Seal */}
+                <Route path="/passport/:id" element={<Passport />} />
+
+                {/* 05. Create Listing / Tokenize Vehicle */}
+                <Route path="/create-listing" element={<CreateListing />} />
+
+                {/* 06. Purchase & Escrow Allowance Flow */}
+                <Route path="/purchase/:id" element={<Purchase />} />
+
+                {/* 07. Escrow State Machine & Vault */}
+                <Route path="/escrow" element={<Escrow />} />
+                <Route path="/escrow/:id" element={<Escrow />} />
+
+                {/* 08. Ownership Transfer RTO Audit */}
+                <Route path="/ownership-transfer" element={<OwnershipTransfer />} />
+                <Route path="/ownership-transfer/:id" element={<OwnershipTransfer />} />
+
+                {/* 09. Authority Dashboard & Verification Queue */}
+                <Route path="/authority" element={<AuthorityDashboard />} />
+
+                {/* 10. AI Risk Analysis & Neural Assistant */}
+                <Route path="/ai-analysis" element={<AIAnalysis />} />
+
+                {/* 11. Transaction History on Sepolia */}
+                <Route path="/tx-history" element={<TxHistory />} />
+
+                {/* 12. Full-Screen Connect Wallet Modal */}
+                <Route path="/connect" element={<ConnectWallet />} />
+
+                {/* Catch-all redirect */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </RoleProvider>
+      </WalletProvider>
+    </BrowserRouter>
+  );
 }
-
-export default App
