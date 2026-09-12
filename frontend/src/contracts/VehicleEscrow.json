@@ -722,7 +722,7 @@
   "linkReferences": {},
   "deployedLinkReferences": {},
   "immutableReferences": {
-    "8996": [
+    "8408": [
       {
         "length": 32,
         "start": 1298
@@ -744,7 +744,7 @@
         "start": 8160
       }
     ],
-    "8999": [
+    "8411": [
       {
         "length": 32,
         "start": 4505
@@ -760,5 +760,5 @@
     ]
   },
   "inputSourceName": "project/contracts/VehicleEscrow.sol",
-  "buildInfoId": "solc-0_8_34-51af9fb4717cc0aa72330b3d150893cbf9e17983"
+  "buildInfoId": "solc-0_8_34-df37d5f870dc3c63171bf0ae474ec7d692c293d4"
 }
