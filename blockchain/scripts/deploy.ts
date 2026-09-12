@@ -44,13 +44,19 @@ async function main() {
   const escrowAddress = await escrow.getAddress();
   console.log("VehicleEscrow deployed at:", escrowAddress);
 
-  // 4. Link VehicleEscrow in VehicleRegistry
+  // 4. Link VehicleRegistry in VehiclePassport
+  console.log("\n[+] Authorizing VehicleRegistry inside VehiclePassport...");
+  const authTx = await passport.setRegistry(registryAddress);
+  await authTx.wait();
+  console.log("Passport linked with Registry successfully!");
+
+  // 5. Link VehicleEscrow in VehicleRegistry
   console.log("\n[+] Authorizing VehicleEscrow inside VehicleRegistry...");
   const linkTx = await registry.setEscrowContract(escrowAddress);
   await linkTx.wait();
   console.log("Registry linked with Escrow successfully!");
 
-  // 5. Deploy MockINR Token
+  // 6. Deploy MockINR Token
   console.log("\n[4/4] Deploying MockINR (mINR)...");
   const mockINR = await ethers.deployContract("MockINR");
   await mockINR.waitForDeployment();
