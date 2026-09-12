@@ -1,10 +1,10 @@
 {
-  "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+  "deployer": "0xAeA9091619a754FC458fb3530628C036051C3f30",
   "contracts": {
-    "VehiclePassport": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-    "VehicleRegistry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    "VehicleEscrow": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-    "MockINR": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+    "VehiclePassport": "0xec5b401ECe64d130B6Cc83c4916137990009Eaf5",
+    "VehicleRegistry": "0xD585f8daDdB3F438aCE2A5b4e86f47e11825fF30",
+    "VehicleEscrow": "0xB9d64e71bc01C8b09F19fF258dE21E0ebDb78EE2",
+    "MockINR": "0x1aE2E1190f4e026f125111fA80882cCFE50EEC1C"
   },
-  "deployedAt": "2026-09-12T11:53:36.440Z"
+  "deployedAt": "2026-09-12T15:03:51.137Z"
 }
