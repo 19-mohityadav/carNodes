@@ -24,6 +24,7 @@ async function main() {
     await registry.getAddress(),
   ]);
   await escrow.waitForDeployment();
+  await (await passport.setRegistry(await registry.getAddress())).wait();
   await (await registry.setEscrowContract(await escrow.getAddress())).wait();
 
   console.log("VehiclePassport deployed at:", await passport.getAddress());
@@ -154,7 +155,8 @@ async function main() {
   console.log("Original Seller   :", seller.address);
   console.log("New Passport Owner:", newOwnerInPassport);
   console.log("Registry Owner    :", updatedVehicle.owner);
-  console.log("Verified          :", updatedVehicle.verified);
+  const statusNames = ["Pending", "Verified", "Rejected", "Listed"];
+  console.log("Status            :", statusNames[Number(updatedVehicle.status)] || updatedVehicle.status);
   console.log("Risk Score        :", updatedVehicle.riskScore.toString(), "/ 100");
   console.log("Document IPFS CID :", updatedVehicle.documentCID);
   console.log("IPFS Gateway Link :", getIPFSGatewayUrl(updatedVehicle.documentCID));

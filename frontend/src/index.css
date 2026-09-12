@@ -1,56 +1,221 @@
-@import "tailwindcss";
+/* ============================================================
+   carNodes — Global Styles
+   Swiss International Typographic Style Design System
+   ============================================================ */
 
-@layer base {
-  :root {
-    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-heading: 'Space Grotesk', 'Inter', sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
+/* — 1. Google Fonts ----------------------------------------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
 
-  body {
-    font-family: var(--font-sans);
-    background-color: #FDFBF7;
-    color: #2B2521;
-    overflow-x: hidden;
-  }
+/* — 2. Tailwind Directives ----------------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  h1, h2, h3, h4, .font-heading {
-    font-family: var(--font-heading);
-  }
-
-  .font-mono {
-    font-family: var(--font-mono);
-  }
+/* — 3. CSS Custom Properties (Design Tokens) ---------------- */
+:root {
+  --swiss-white:  #FFFFFF;
+  --swiss-black:  #000000;
+  --swiss-muted:  #F2F2F2;
+  --swiss-accent: #FF3000;
+  --swiss-border: #000000;
+  --swiss-border-width: 2px;
+  --transition-snap: 150ms linear;
+  --transition-swift: 200ms cubic-bezier(0.25, 0, 0.25, 1);
 }
 
-/* Custom Animations & Showroom Stage Styling */
-@keyframes pedestalPulse {
-  0%, 100% {
-    box-shadow: 0 0 50px rgba(179, 107, 57, 0.12), inset 0 0 30px rgba(255, 59, 48, 0.05);
-  }
-  50% {
-    box-shadow: 0 0 80px rgba(179, 107, 57, 0.22), inset 0 0 50px rgba(255, 59, 48, 0.12);
-  }
+/* — 4. Global Resets ---------------------------------------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@keyframes trackSpin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.97); }
-  to   { opacity: 1; transform: scale(1); }
+body {
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: var(--swiss-white);
+  color: var(--swiss-black);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+  /* Noise texture applied globally — simulates paper grain */
+  position: relative;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.22s ease-out both;
+/* Global noise overlay on body */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.015'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
-@keyframes pulseGlow {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
+/* All content above the noise overlay */
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+/* — 5. Typography System ------------------------------------ */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--swiss-black);
+}
+
+p, li, td, th {
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+code, pre, .mono {
+  font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 0.875em;
+}
+
+/* — 6. Swiss Texture Utility Classes ----------------------- */
+
+/* Grid Pattern — 24×24px subtle grid lines */
+.swiss-grid-pattern {
+  background-image:
+    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Dot Matrix — 16×16px radial dots */
+.swiss-dots {
+  background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Diagonal Lines — 45° repeating stripes */
+.swiss-diagonal {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.02),
+    rgba(0,0,0,0.02) 1px,
+    transparent 1px,
+    transparent 10px
+  );
+}
+
+/* Heavy noise — for hero/accent sections */
+.swiss-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* — 7. Component Base Classes ------------------------------ */
+
+/* Swiss Button */
+.btn-swiss-primary {
+  @apply bg-swiss-black text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black
+         transition-all duration-150
+         hover:bg-swiss-accent hover:border-swiss-accent
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2
+         cursor-pointer;
+}
+
+.btn-swiss-secondary {
+  @apply bg-swiss-white text-swiss-black font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black
+         transition-all duration-150
+         hover:bg-swiss-black hover:text-swiss-white
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-black focus-visible:ring-offset-2
+         cursor-pointer;
+}
+
+.btn-swiss-accent {
+  @apply bg-swiss-accent text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-accent
+         transition-all duration-150
+         hover:bg-swiss-black hover:border-swiss-black
+         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2
+         cursor-pointer;
+}
+
+/* Swiss Card */
+.card-swiss {
+  @apply bg-swiss-white border-2 border-swiss-black p-8 transition-all duration-200;
+}
+
+.card-swiss:hover {
+  @apply bg-swiss-black text-swiss-white;
+}
+
+/* Swiss Input */
+.input-swiss {
+  @apply w-full bg-transparent border-b-2 border-swiss-black px-0 py-3 font-medium text-swiss-black
+         placeholder:text-swiss-black/40 placeholder:uppercase placeholder:tracking-widest placeholder:text-sm
+         focus:outline-none focus:border-swiss-accent
+         transition-colors duration-150;
+}
+
+.input-swiss-box {
+  @apply w-full bg-swiss-white border-2 border-swiss-black px-4 py-3 font-medium text-swiss-black
+         placeholder:text-swiss-black/40
+         focus:outline-none focus:border-swiss-accent
+         transition-colors duration-150;
+}
+
+/* Swiss Label */
+.label-swiss {
+  @apply text-xs font-bold uppercase tracking-widest text-swiss-black/60 mb-2 block;
+}
+
+/* Section Number Label */
+.section-label {
+  @apply text-xs font-bold uppercase tracking-widest;
+}
+
+/* Divider */
+.swiss-divider {
+  @apply border-t-2 border-swiss-black;
+}
+
+/* — 8. Scrollbar Styling ---------------------------------- */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--swiss-muted);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--swiss-black);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--swiss-accent);
+}
+
+/* — 9. Text Selection ------------------------------------- */
+::selection {
+  background-color: var(--swiss-accent);
+  color: var(--swiss-white);
+}
+
+/* — 10. Focus Styles ------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--swiss-accent);
+  outline-offset: 2px;
+}
+
+/* — 11. Reduced Motion ----------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
   50% {
     opacity: 0.9;
@@ -62,50 +227,77 @@
   animation: pedestalPulse 6s ease-in-out infinite;
 }
 
-.pulse-glow {
-  animation: pulseGlow 2.5s infinite ease-in-out;
+/* — 12. Nav Slide Animation (text slides out, red slides in) */
+.nav-link {
+  @apply relative overflow-hidden inline-flex flex-col items-start;
+  height: 1.2em;
 }
 
-/* Custom Scrollbar for Swiss Modernism */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #FDFBF7;
-}
-::-webkit-scrollbar-thumb {
-  background: #D4D4D8;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #B36B39;
+.nav-link span {
+  @apply block transition-transform duration-200 ease-out;
+  line-height: 1.2;
 }
 
-/* Glassmorphism helpers */
-.glass-nav {
-  background: rgba(253, 251, 247, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+.nav-link span:last-child {
+  @apply absolute top-full text-swiss-accent;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.nav-link:hover span:first-child {
+  transform: translateY(-100%);
 }
 
-.glass-dark {
-  background: rgba(17, 17, 17, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+.nav-link:hover span:last-child {
+  transform: translateY(-100%);
 }
 
-/* Custom Radial Gradient for Showroom Pedestal */
-.pedestal-ring {
-  background: radial-gradient(ellipse at center, rgba(240, 238, 233, 0.9) 0%, rgba(253, 251, 247, 0) 70%);
+/* — 13. Passport / mono data cells ---------------------- */
+.passport-field {
+  @apply py-4 border-b border-swiss-black/20 flex flex-col gap-1;
 }
 
-.pedestal-shadow {
-  background: radial-gradient(ellipse at center, rgba(30, 25, 20, 0.28) 0%, rgba(0, 0, 0, 0) 65%);
+.passport-field .field-label {
+  @apply text-xs font-bold uppercase tracking-widest text-swiss-black/50;
+}
+
+.passport-field .field-value {
+  @apply text-base font-medium text-swiss-black;
+}
+
+/* — 14. Status Badge ------------------------------------ */
+.badge-verified {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 bg-swiss-black text-swiss-white text-xs font-bold uppercase tracking-widest;
+}
+
+.badge-pending {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 bg-swiss-muted text-swiss-black border-2 border-swiss-black text-xs font-bold uppercase tracking-widest;
+}
+
+.badge-rejected {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 bg-swiss-accent text-swiss-white text-xs font-bold uppercase tracking-widest;
+}
+
+/* — 15. Escrow State Line ------------------------------- */
+.escrow-step {
+  @apply flex flex-col items-center;
+}
+
+.escrow-step-dot {
+  @apply w-4 h-4 border-2 border-swiss-black bg-swiss-white transition-colors duration-200;
+}
+
+.escrow-step-dot.active {
+  @apply bg-swiss-black;
+}
+
+.escrow-step-dot.current {
+  @apply bg-swiss-accent border-swiss-accent;
+}
+
+/* — 16. Risk Meter -------------------------------------- */
+.risk-bar {
+  @apply h-2 bg-swiss-muted border border-swiss-black overflow-hidden;
+}
+
+.risk-fill {
+  @apply h-full transition-all duration-500;
 }

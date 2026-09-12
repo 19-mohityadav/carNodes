@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth.routes');
 const vehicleRoutes = require('./routes/vehicle.routes');
+const blockchainRoutes = require('./routes/blockchain.routes');
 const errorHandler = require('./middleware/error');
 
 const app = express();
@@ -32,6 +33,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/blockchain', blockchainRoutes);
 
 // 404 Handler
 app.use((req, res) => {
