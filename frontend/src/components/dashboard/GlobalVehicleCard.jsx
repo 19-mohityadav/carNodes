@@ -1,111 +1,104 @@
 import React from 'react';
-import { ShieldCheck, Award, FileText, ChevronRight, Eye } from 'lucide-react';
+import { ShieldCheck, ArrowUpRight, Award, FileText, CheckCircle2, AlertTriangle, Eye, Sparkles } from 'lucide-react';
 
-export default function GlobalVehicleCard({ vehicle, onSelect, onOpenPassport, role = 'buyer' }) {
-  const isLowRisk = vehicle.trustScore >= 90;
+export default function GlobalVehicleCard({
+  vehicle,
+  onViewVehicle,
+  onViewPassport,
+  role = 'buyer', // 'buyer' | 'seller' | 'authority'
+  onAction,
+  className = ''
+}) {
+  if (!vehicle) return null;
+
+  const priceInr = vehicle.priceInr || `₹${((vehicle.priceUsd || 45000) * 85).toLocaleString('en-IN')}`;
+  const priceUsd = vehicle.priceUsd ? `$${vehicle.priceUsd.toLocaleString()}` : '$48,500';
 
   return (
-    <div className="group bg-white rounded-2xl border border-zinc-200 hover:border-[#0D9488]/40 shadow-xs hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col justify-between">
-      {/* Vehicle Image Container */}
-      <div className="relative aspect-[16/10] bg-zinc-100 overflow-hidden">
+    <div className={`bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:border-teal-600/40 ${className}`}>
+      {/* Top Image Container */}
+      <div className="relative aspect-[16/10] bg-slate-50 overflow-hidden flex items-center justify-center p-3 border-b border-slate-100">
         <img
-          src={vehicle.image}
-          alt={vehicle.model}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => {
-            e.target.src = 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80';
-          }}
+          src={vehicle.image || '/cars/audi_r8_camry.png'}
+          alt={vehicle.shortName || vehicle.model || 'Vehicle'}
+          className="w-full h-full object-contain transform group-hover:scale-105 transition-transform duration-500 select-none"
         />
 
-        {/* Top Badges overlay */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <span className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md border border-zinc-200/80 text-[10px] font-mono font-bold text-emerald-800 shadow-xs">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>Blockchain Verified</span>
-          </span>
-
-          <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-[#111111]/85 backdrop-blur-md text-[10px] font-mono font-bold text-white shadow-xs">
-            <span>{vehicle.id}</span>
-          </span>
+        {/* Blockchain Verified Pill */}
+        <div className="absolute top-3 left-3 flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-xs border border-teal-500/30 text-teal-800 text-[11px] font-semibold shadow-xs">
+          <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+          <span>Blockchain Verified</span>
         </div>
 
-        {/* Bottom Trust & Risk Overlay */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <div className="flex items-center space-x-1.5 bg-emerald-500/90 backdrop-blur-md text-white px-2.5 py-0.5 rounded-full text-[11px] font-mono font-extrabold shadow-xs">
-            <Award className="w-3 h-3" />
-            <span>Score {vehicle.trustScore}/100</span>
-          </div>
+        {/* Trust Score Badge */}
+        <div className="absolute top-3 right-3 flex items-center space-x-1 px-2.5 py-1 rounded-full bg-slate-900/90 backdrop-blur-xs text-white text-[11px] font-mono font-bold shadow-xs">
+          <Award className="w-3.5 h-3.5 text-teal-400" />
+          <span>{vehicle.trustScore || 94}/100</span>
+        </div>
 
-          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full backdrop-blur-md uppercase ${
-            isLowRisk
-              ? 'bg-emerald-100/90 text-emerald-900 border border-emerald-300'
-              : 'bg-amber-100/90 text-amber-900 border border-amber-300'
-          }`}>
-            {isLowRisk ? 'Low Risk' : 'Medium Risk'}
-          </span>
+        {/* Vehicle ID Pill */}
+        <div className="absolute bottom-2 left-3 px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-mono font-bold uppercase tracking-wider border border-slate-200">
+          {vehicle.id || 'CN-48291'}
         </div>
       </div>
 
-      {/* Card Content Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+      {/* Body Content */}
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
-          <div className="flex items-center justify-between text-xs font-mono text-[#6E6259] mb-1">
-            <span>Year {vehicle.year || '2023'}</span>
-            <span>{vehicle.mileage}</span>
-          </div>
-
-          <h3 className="text-base font-heading font-extrabold text-[#111111] line-clamp-1 group-hover:text-[#0D9488] transition-colors">
-            {vehicle.model}
-          </h3>
-
-          <p className="text-xs font-mono text-[#6E6259] mt-1 truncate">
-            VIN: {vehicle.vin}
-          </p>
-        </div>
-
-        {/* Specs Pill List */}
-        <div className="grid grid-cols-2 gap-1.5 py-2 border-y border-zinc-100 text-[11px] font-mono text-zinc-600">
-          <div className="truncate">
-            <span className="text-zinc-400">Power: </span>
-            <span className="font-semibold text-zinc-800">{vehicle.horsepower || '450 HP'}</span>
-          </div>
-          <div className="truncate text-right">
-            <span className="text-zinc-400">Node: </span>
-            <span className="font-semibold text-[#0D9488] truncate">{vehicle.verifications?.authorityNode?.split(' ')[0] || 'RTO #409'}</span>
-          </div>
-        </div>
-
-        {/* Price & Action Buttons */}
-        <div className="pt-1 flex items-center justify-between">
-          <div>
-            <span className="text-[10px] font-mono uppercase text-[#6E6259] block font-semibold">Verified Price</span>
-            <span className="text-lg font-heading font-extrabold text-[#111111]">
-              ${vehicle.priceUsd?.toLocaleString()}
+          {/* Year & Risk Status */}
+          <div className="flex items-center justify-between text-xs text-slate-500 mb-1.5">
+            <span className="font-semibold text-slate-600">{vehicle.year || '2023'} • {vehicle.mileage || '18,500 mi'}</span>
+            <span className="inline-flex items-center space-x-1 text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border border-teal-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+              <span>Low Risk</span>
             </span>
           </div>
 
-          <div className="flex items-center space-x-1.5">
-            {onOpenPassport && (
-              <button
-                onClick={() => onOpenPassport(vehicle)}
-                title="View Digital Vehicle Passport"
-                className="p-2 rounded-xl bg-zinc-100 hover:bg-[#0D9488]/10 text-zinc-700 hover:text-[#0D9488] transition-colors border border-zinc-200 text-xs font-semibold flex items-center space-x-1 cursor-pointer"
-              >
-                <FileText className="w-4 h-4" />
-                <span className="hidden sm:inline text-[11px]">Passport</span>
-              </button>
-            )}
+          {/* Vehicle Name */}
+          <h3 className="text-base font-heading font-bold text-slate-900 leading-snug group-hover:text-teal-900 transition-colors line-clamp-1">
+            {vehicle.shortName || vehicle.model || vehicle.name || 'Audi R8 / Camry XSE'}
+          </h3>
 
-            {onSelect && (
-              <button
-                onClick={() => onSelect(vehicle)}
-                className="px-3.5 py-2 rounded-xl bg-[#2B2521] hover:bg-[#0D9488] text-white text-xs font-bold transition-colors shadow-xs flex items-center space-x-1 cursor-pointer"
-              >
-                <span>{role === 'authority' ? 'Review' : role === 'seller' ? 'Manage' : 'View'}</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-            )}
+          {/* Quick Spec Highlights */}
+          <p className="text-xs text-slate-500 mt-1 line-clamp-1 font-mono">
+            {vehicle.engine || '5.2L V10'} • {vehicle.transmission || 'Automatic'} • {vehicle.drivetrain || 'AWD'}
+          </p>
+        </div>
+
+        {/* Price & Primary Details */}
+        <div className="pt-3 border-t border-slate-100 flex items-baseline justify-between">
+          <div>
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Verified Price</span>
+            <div className="flex items-baseline space-x-1.5">
+              <span className="text-lg font-heading font-extrabold text-slate-900">{priceInr}</span>
+              <span className="text-xs font-mono text-slate-500 font-medium">({priceUsd})</span>
+            </div>
           </div>
+          <div className="text-right">
+            <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Sepolia Oracle</span>
+            <span className="text-xs font-mono font-bold text-teal-700">100% On-Chain</span>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <button
+            type="button"
+            onClick={() => onViewVehicle && onViewVehicle(vehicle)}
+            className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-teal-700 text-white text-xs font-semibold tracking-wide transition-all duration-200 flex items-center justify-center space-x-1.5 shadow-xs cursor-pointer"
+          >
+            <span>View Vehicle</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onViewPassport && onViewPassport(vehicle)}
+            className="py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 text-xs font-semibold tracking-wide transition-all duration-200 flex items-center justify-center space-x-1.5 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-teal-600" />
+            <span>View Passport</span>
+          </button>
         </div>
       </div>
     </div>

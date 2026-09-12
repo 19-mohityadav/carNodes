@@ -13,9 +13,9 @@
 
 /* — 3. CSS Custom Properties (Design Tokens) ---------------- */
 :root {
-  --swiss-white:  #FFFFFF;
-  --swiss-black:  #000000;
-  --swiss-muted:  #F2F2F2;
+  --swiss-white: #FFFFFF;
+  --swiss-black: #000000;
+  --swiss-muted: #F2F2F2;
   --swiss-accent: #FF3000;
   --swiss-border: #000000;
   --swiss-border-width: 2px;
@@ -24,7 +24,9 @@
 }
 
 /* — 4. Global Resets ---------------------------------------- */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -65,7 +67,12 @@ body::before {
 }
 
 /* — 5. Typography System ------------------------------------ */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 900;
   line-height: 0.95;
@@ -74,12 +81,17 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--swiss-black);
 }
 
-p, li, td, th {
+p,
+li,
+td,
+th {
   font-weight: 400;
   line-height: 1.6;
 }
 
-code, pre, .mono {
+code,
+pre,
+.mono {
   font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
   font-size: 0.875em;
 }
@@ -89,26 +101,24 @@ code, pre, .mono {
 /* Grid Pattern — 24×24px subtle grid lines */
 .swiss-grid-pattern {
   background-image:
-    linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
 /* Dot Matrix — 16×16px radial dots */
 .swiss-dots {
-  background-image: radial-gradient(circle, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 
 /* Diagonal Lines — 45° repeating stripes */
 .swiss-diagonal {
-  background-image: repeating-linear-gradient(
-    45deg,
-    rgba(0,0,0,0.02),
-    rgba(0,0,0,0.02) 1px,
-    transparent 1px,
-    transparent 10px
-  );
+  background-image: repeating-linear-gradient(45deg,
+      rgba(0, 0, 0, 0.02),
+      rgba(0, 0, 0, 0.02) 1px,
+      transparent 1px,
+      transparent 10px);
 }
 
 /* Heavy noise — for hero/accent sections */
@@ -121,27 +131,15 @@ code, pre, .mono {
 
 /* Swiss Button */
 .btn-swiss-primary {
-  @apply bg-swiss-black text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black
-         transition-all duration-150
-         hover:bg-swiss-accent hover:border-swiss-accent
-         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2
-         cursor-pointer;
+  @apply bg-swiss-black text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black transition-all duration-150 hover:bg-swiss-accent hover:border-swiss-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2 cursor-pointer;
 }
 
 .btn-swiss-secondary {
-  @apply bg-swiss-white text-swiss-black font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black
-         transition-all duration-150
-         hover:bg-swiss-black hover:text-swiss-white
-         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-black focus-visible:ring-offset-2
-         cursor-pointer;
+  @apply bg-swiss-white text-swiss-black font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-black transition-all duration-150 hover:bg-swiss-black hover:text-swiss-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-black focus-visible:ring-offset-2 cursor-pointer;
 }
 
 .btn-swiss-accent {
-  @apply bg-swiss-accent text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-accent
-         transition-all duration-150
-         hover:bg-swiss-black hover:border-swiss-black
-         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2
-         cursor-pointer;
+  @apply bg-swiss-accent text-swiss-white font-bold uppercase tracking-widest text-sm px-8 py-4 border-2 border-swiss-accent transition-all duration-150 hover:bg-swiss-black hover:border-swiss-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-swiss-accent focus-visible:ring-offset-2 cursor-pointer;
 }
 
 /* Swiss Card */
@@ -155,17 +153,11 @@ code, pre, .mono {
 
 /* Swiss Input */
 .input-swiss {
-  @apply w-full bg-transparent border-b-2 border-swiss-black px-0 py-3 font-medium text-swiss-black
-         placeholder:text-swiss-black/40 placeholder:uppercase placeholder:tracking-widest placeholder:text-sm
-         focus:outline-none focus:border-swiss-accent
-         transition-colors duration-150;
+  @apply w-full bg-transparent border-b-2 border-swiss-black px-0 py-3 font-medium text-swiss-black placeholder:text-swiss-black/40 placeholder:uppercase placeholder:tracking-widest placeholder:text-sm focus:outline-none focus:border-swiss-accent transition-colors duration-150;
 }
 
 .input-swiss-box {
-  @apply w-full bg-swiss-white border-2 border-swiss-black px-4 py-3 font-medium text-swiss-black
-         placeholder:text-swiss-black/40
-         focus:outline-none focus:border-swiss-accent
-         transition-colors duration-150;
+  @apply w-full bg-swiss-white border-2 border-swiss-black px-4 py-3 font-medium text-swiss-black placeholder:text-swiss-black/40 focus:outline-none focus:border-swiss-accent transition-colors duration-150;
 }
 
 /* Swiss Label */
@@ -188,12 +180,15 @@ code, pre, .mono {
   width: 4px;
   height: 4px;
 }
+
 ::-webkit-scrollbar-track {
   background: var(--swiss-muted);
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--swiss-black);
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--swiss-accent);
 }
@@ -212,14 +207,23 @@ code, pre, .mono {
 
 /* — 11. Reduced Motion ----------------------------------- */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@keyframes pedestalPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
   50% {
     opacity: 0.9;
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 }
 

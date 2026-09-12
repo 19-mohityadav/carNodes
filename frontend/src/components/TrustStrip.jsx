@@ -32,9 +32,9 @@ const TRUST_BADGES = [
 export default function TrustStrip() {
   const iconMap = {
     ShieldCheck: <ShieldCheck className="w-6 h-6 text-[#FF3B30]" />,
-    Lock:        <Lock        className="w-6 h-6 text-[#B36B39]" />,
-    CreditCard:  <CreditCard  className="w-6 h-6 text-emerald-600" />,
-    FileCheck:   <FileCheck   className="w-6 h-6 text-[#B36B39]" />,
+    Lock: <Lock className="w-6 h-6 text-[#B36B39]" />,
+    CreditCard: <CreditCard className="w-6 h-6 text-emerald-600" />,
+    FileCheck: <FileCheck className="w-6 h-6 text-[#B36B39]" />,
   };
 
   return (

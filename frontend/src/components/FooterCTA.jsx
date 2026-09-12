@@ -4,11 +4,11 @@ import { ShieldCheck, Car, PlusCircle, ArrowRight, Globe, MessageSquare, Disc as
 export default function FooterCTA({ onOpenMarketplace, onOpenListModal, onOpenVerifyModal }) {
   return (
     <footer className="bg-[#111111] text-white pt-20 pb-12 border-t border-zinc-800 relative overflow-hidden">
-      
+
       {/* FINAL CALL TO ACTION BANNER */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-20">
         <div className="bg-[#2B2521] p-10 sm:p-16 rounded-3xl border border-zinc-800 text-center relative overflow-hidden shadow-2xl">
-          
+
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#FF3B30]/10 rounded-full blur-3xl pointer-events-none"></div>
 
           <span className="text-xs font-mono uppercase tracking-widest text-[#FF3B30] font-semibold mb-3 inline-block">
@@ -49,7 +49,7 @@ export default function FooterCTA({ onOpenMarketplace, onOpenListModal, onOpenVe
       {/* FOOTER LINKS & BRANDING */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-zinc-800 text-xs text-zinc-400">
-          
+
           {/* Brand Col */}
           <div className="md:col-span-4 space-y-4">
             <div className="flex items-center space-x-2">

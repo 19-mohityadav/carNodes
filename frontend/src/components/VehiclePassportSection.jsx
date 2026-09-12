@@ -55,7 +55,7 @@ export default function VehiclePassportSection({ activeCar }) {
   return (
     <section id="passport-section" className="py-20 bg-[#FDFBF7] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white border border-zinc-300 text-xs font-mono text-[#B36B39] mb-4">
@@ -75,10 +75,10 @@ export default function VehiclePassportSection({ activeCar }) {
 
         {/* INTERACTIVE DIGITAL PASSPORT CONTAINER */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* LEFT: TIMELINE & BADGES (Cols 1-7) */}
           <div className="lg:col-span-7 space-y-6">
-            
+
             {/* Passport Identity Header Card */}
             <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -127,16 +127,14 @@ export default function VehiclePassportSection({ activeCar }) {
                     <div
                       key={idx}
                       onClick={() => setSelectedEventIndex(idx)}
-                      className={`relative cursor-pointer group transition-all p-3.5 rounded-xl border ${
-                        isSelected
+                      className={`relative cursor-pointer group transition-all p-3.5 rounded-xl border ${isSelected
                           ? 'bg-[#FDFBF7] border-[#FF3B30] shadow-sm'
                           : 'bg-white border-transparent hover:border-zinc-200'
-                      }`}
+                        }`}
                     >
                       {/* Timeline Dot */}
-                      <div className={`absolute -left-6 top-5 w-4 h-4 rounded-full border-2 transition-all ${
-                        isSelected ? 'bg-[#FF3B30] border-white ring-4 ring-[#FF3B30]/20' : 'bg-zinc-300 border-white'
-                      }`}></div>
+                      <div className={`absolute -left-6 top-5 w-4 h-4 rounded-full border-2 transition-all ${isSelected ? 'bg-[#FF3B30] border-white ring-4 ring-[#FF3B30]/20' : 'bg-zinc-300 border-white'
+                        }`}></div>
 
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono font-bold text-[#FF3B30]">{evt.year} — {evt.date}</span>
@@ -164,7 +162,7 @@ export default function VehiclePassportSection({ activeCar }) {
           {/* RIGHT: CRYPTOGRAPHIC PROOF INSPECTOR (Cols 8-12) */}
           <div className="lg:col-span-5">
             <div className="bg-[#2B2521] text-white p-6 rounded-2xl border border-zinc-800 shadow-2xl space-y-5 sticky top-28">
-              
+
               <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div className="flex items-center space-x-2">
                   <Database className="w-4 h-4 text-emerald-400" />
@@ -184,7 +182,7 @@ export default function VehiclePassportSection({ activeCar }) {
 
               {/* Cryptographic Hash Details Box */}
               <div className="bg-black/60 p-4 rounded-xl border border-zinc-800 font-mono space-y-3">
-                
+
                 <div>
                   <div className="flex items-center justify-between text-[11px] text-zinc-400 mb-1">
                     <span>Algorand Transaction Hash:</span>
