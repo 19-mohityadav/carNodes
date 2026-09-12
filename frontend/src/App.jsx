@@ -6,13 +6,10 @@ import TrustStrip from './components/TrustStrip';
 import ComparisonMatrix from './components/ComparisonMatrix';
 import HowItWorks from './components/HowItWorks';
 import VehiclePassportSection from './components/VehiclePassportSection';
-import AiAssistantSection from './components/AiAssistantSection';
 import EscrowSection from './components/EscrowSection';
 import StakeholdersSection from './components/StakeholdersSection';
-import TechStackSection from './components/TechStackSection';
 import ImpactVisionSection from './components/ImpactVisionSection';
 import FooterCTA from './components/FooterCTA';
-
 import LoginModal from './components/LoginModal';
 import MarketplaceModal from './components/MarketplaceModal';
 import ListVehicleModal from './components/ListVehicleModal';
@@ -138,11 +135,6 @@ export default function App() {
         {/* 6. DIGITAL VEHICLE PASSPORT */}
         <VehiclePassportSection activeCar={VEHICLES[activeCarIndex]} />
 
-        {/* 7. AI AGENT ASSISTANT */}
-        <AiAssistantSection
-          onOpenMarketplace={() => setIsMarketplaceOpen(true)}
-          onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
-        />
 
         {/* 8. ESCROW SECTION */}
         <EscrowSection onOpenWalletModal={() => handleOpenAuth('signin')} />
@@ -154,8 +146,6 @@ export default function App() {
           onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
         />
 
-        {/* 10. TECH STACK */}
-        <TechStackSection />
 
         {/* 11. IMPACT & VISION */}
         <ImpactVisionSection />
