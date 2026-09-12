@@ -17,7 +17,7 @@ export default defineConfig({
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: process.env.SEPOLIA_RPC_URL || "",
+      url: process.env.SEPOLIA_RPC_URL || "https://rpc.sepolia.org",
       accounts: process.env.PRIVATE_KEY
         ? [
             process.env.PRIVATE_KEY.startsWith("0x")

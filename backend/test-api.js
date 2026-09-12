@@ -305,8 +305,18 @@ async function runTests() {
     });
     assert(dupRegRes.status === 409, 'Duplicate registration number creation returns 409 Conflict');
 
+    // 20. Blockchain info endpoint
+    console.log('\n20. Testing /api/blockchain/info endpoint...');
+    const bcInfoRes = await request('/api/blockchain/info');
+    assert(bcInfoRes.status === 200, 'Blockchain info endpoint status is 200');
+    assert(bcInfoRes.body.success === true, 'Blockchain info returns success: true');
+    assert(bcInfoRes.body.data.contracts.VehiclePassport !== undefined, 'VehiclePassport contract address present');
+    assert(bcInfoRes.body.data.contracts.VehicleRegistry !== undefined, 'VehicleRegistry contract address present');
+    assert(bcInfoRes.body.data.contracts.VehicleEscrow !== undefined, 'VehicleEscrow contract address present');
+    assert(bcInfoRes.body.data.contracts.MockINR !== undefined, 'MockINR contract address present');
+
     console.log('\n==================================================');
-    console.log(' 🎉 ALL 19 API VERIFICATION TESTS PASSED SUCCESSFULLY!');
+    console.log(' 🎉 ALL 20 API VERIFICATION TESTS PASSED SUCCESSFULLY!');
     console.log('==================================================');
 
   } catch (error) {
