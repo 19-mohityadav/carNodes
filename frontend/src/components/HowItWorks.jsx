@@ -18,9 +18,7 @@ export default function HowItWorks() {
 
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#B36B39] font-semibold">
-            Protocol Execution Flow
-          </span>
+          
           <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[#111111] mt-1 font-heading">
             From Vehicle to Verified Asset
           </h2>
@@ -94,41 +92,6 @@ export default function HowItWorks() {
             </div>
           ))}
         </div>
-
-        {/* Active Step Deep-Dive Card Display */}
-        <div className="bg-[#2B2521] text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-          <div className="absolute right-0 top-0 w-96 h-96 bg-[#FF3B30]/10 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
-            <div className="md:col-span-8">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-white/10 border border-white/20 text-xs font-mono text-[#FF3B30] mb-3">
-                <span>STAGE {HOW_IT_WORKS_STEPS[activeStep].num} DEEP DIVE</span>
-              </div>
-              <h3 className="text-2xl sm:text-3xl font-heading font-bold uppercase tracking-tight">
-                {HOW_IT_WORKS_STEPS[activeStep].title}: {HOW_IT_WORKS_STEPS[activeStep].subtitle}
-              </h3>
-              <p className="mt-3 text-sm text-zinc-300 max-w-xl leading-relaxed">
-                {HOW_IT_WORKS_STEPS[activeStep].desc} Every action in this stage generates a verifiable cryptographic signature logged directly to the Algorand blockchain and IPFS decentralized storage node network.
-              </p>
-            </div>
-
-            <div className="md:col-span-4 bg-white/5 p-5 rounded-2xl border border-white/10 text-xs font-mono space-y-3">
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span className="text-zinc-400">Node Status:</span>
-                <span className="text-emerald-400 font-bold">Active Node ✓</span>
-              </div>
-              <div className="flex justify-between border-b border-white/10 pb-2">
-                <span className="text-zinc-400">Latency:</span>
-                <span className="text-white font-bold">&lt; 1.2 seconds</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-zinc-400">Consensus:</span>
-                <span className="text-[#B36B39] font-bold">Pure Proof of Stake</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </section>
   );

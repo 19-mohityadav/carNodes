@@ -43,13 +43,9 @@ export default function TrustStrip() {
 
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-12">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#B36B39] font-semibold">
-            Institutional Trust Architecture
-          </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold uppercase tracking-tight text-[#111111] mt-1 font-heading">
-            Trust Built Into Every Transaction
+            Trust Built Into Every Transfer
           </h2>
-          <div className="w-12 h-1 bg-[#FF3B30] mx-auto mt-4 rounded-full" />
         </div>
 
         {/* 4 Cards (AI Assisted removed) */}

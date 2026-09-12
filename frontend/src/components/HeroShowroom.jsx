@@ -33,11 +33,7 @@ export default function HeroShowroom({
 
           {/* LEFT COLUMN (6 cols): Main Text, Headline & CTAs */}
           <div className="lg:col-span-6 flex flex-col items-start text-left space-y-6">
-            {/* Badge pill */}
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-zinc-100 border border-zinc-300 text-xs font-mono font-medium text-[#2B2521] shadow-xs">
-              <span className="w-2 h-2 rounded-full bg-[#FF3B30] animate-ping" />
-              <span className="uppercase tracking-wider">VERIFIED RWA SHOWROOM · ALGORAND MAINNET LIVE</span>
-            </div>
+            
 
             {/* Main Headline */}
             <h1
@@ -64,20 +60,13 @@ export default function HeroShowroom({
                 <span>Explore Verified Vehicles</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button
-                onClick={onOpenVerifyModal}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white hover:bg-zinc-50 text-[#2B2521] border border-zinc-300 font-semibold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer"
-              >
-                <ShieldCheck className="w-4 h-4 text-[#B36B39]" />
-                <span>Verify a Vehicle</span>
-              </button>
+              
             </div>
 
             {/* Trust strip */}
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] uppercase tracking-wider font-semibold text-[#6E6259] pt-2">
               <span className="flex items-center space-x-1.5"><span className="text-[#FF3B30]">●</span> Authority-Verified</span>
               <span className="flex items-center space-x-1.5"><span className="text-[#B36B39]">●</span> Digital Vehicle Passport</span>
-              <span className="flex items-center space-x-1.5"><span className="text-[#2B2521]">●</span> AI-Powered</span>
               <span className="flex items-center space-x-1.5"><span className="text-emerald-600">●</span> Blockchain-Backed</span>
             </div>
 

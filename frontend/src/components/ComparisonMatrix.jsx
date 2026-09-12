@@ -11,9 +11,7 @@ export default function ComparisonMatrix() {
 
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#FF3B30] font-semibold">
-            Paradigm Shift in Automotive Trade
-          </span>
+  
           <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[#111111] mt-1 font-heading">
             The Used-Car Market Has a Trust Problem.
           </h2>
@@ -100,7 +98,7 @@ export default function ComparisonMatrix() {
                 ✓
               </div>
               <span className="text-xs font-mono font-bold text-[#2B2521] uppercase">
-                100% Cryptographic Verification • Algorand ASA RWA Standard
+                100% Cryptographic Verification • 
               </span>
             </div>
             <a

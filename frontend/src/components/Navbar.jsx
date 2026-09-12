@@ -46,7 +46,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 glass-nav border-b border-zinc-200/80 bg-gray-200 text-white transition-all duration-300">
+    <header className="sticky top-0 z-50 glass-nav border-b border-zinc-200/80 bg-gray-400 text-black transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
 
@@ -98,11 +98,10 @@ export default function Navbar({
                         setDashboardDropdownOpen(false);
                         if (onOpenDashboard) onOpenDashboard('buyer');
                       }}
-                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                        activeUser?.role === 'buyer'
+                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${activeUser?.role === 'buyer'
                           ? 'bg-teal-50/80 text-teal-900 font-bold'
                           : 'hover:bg-slate-50 text-slate-800 font-semibold'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-2">
                         <Car className="w-4 h-4 text-teal-600" />
@@ -116,11 +115,10 @@ export default function Navbar({
                         setDashboardDropdownOpen(false);
                         if (onOpenDashboard) onOpenDashboard('seller');
                       }}
-                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                        activeUser?.role === 'seller'
+                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${activeUser?.role === 'seller'
                           ? 'bg-slate-100 text-slate-900 font-bold'
                           : 'hover:bg-slate-50 text-slate-800 font-semibold'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-2">
                         <Building2 className="w-4 h-4 text-slate-700" />
@@ -134,11 +132,10 @@ export default function Navbar({
                         setDashboardDropdownOpen(false);
                         if (onOpenDashboard) onOpenDashboard('authority');
                       }}
-                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${
-                        activeUser?.role === 'authority'
+                      className={`w-full text-left p-2 rounded-xl text-xs flex items-center justify-between cursor-pointer transition-colors ${activeUser?.role === 'authority'
                           ? 'bg-emerald-50 text-emerald-900 font-bold'
                           : 'hover:bg-slate-50 text-slate-800 font-semibold'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-2">
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
