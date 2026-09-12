@@ -95,10 +95,7 @@ export default function SellerDashboardView({
           {/* Header Banner */}
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-mono font-semibold border border-slate-200">
-                <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
-                <span>SELLER WORKSPACE • {MOCK_SELLER_DATA.company}</span>
-              </div>
+              
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
                 Welcome back, {MOCK_SELLER_DATA.name}
               </h1>
@@ -132,7 +129,6 @@ export default function SellerDashboardView({
               <h3 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
                 Seller Performance Overview
               </h3>
-              <span className="text-xs font-mono text-teal-700 font-bold">4 Verified Assets Live</span>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -143,9 +139,7 @@ export default function SellerDashboardView({
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
                     {MOCK_SELLER_DATA.stats.activeListings}
                   </span>
-                  <span className="text-[11px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
-                    All Active
-                  </span>
+                  
                 </div>
               </div>
 
@@ -156,9 +150,7 @@ export default function SellerDashboardView({
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
                     {MOCK_SELLER_DATA.stats.verifiedVehicles}
                   </span>
-                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
-                    100% Stamped
-                  </span>
+                  
                 </div>
               </div>
 
@@ -502,10 +494,7 @@ export default function SellerDashboardView({
                       <span className="font-medium text-slate-700">Hypothecation / Lien Check:</span>
                       <strong className="text-emerald-700">✓ 0 Outstanding Liens</strong>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-slate-700">AI Risk Assessment:</span>
-                      <strong className="text-teal-700">LOW RISK (Score 95/100)</strong>
-                    </div>
+                    
                   </div>
 
                   <div className="pt-4 flex justify-between">
@@ -574,69 +563,7 @@ export default function SellerDashboardView({
         </div>
       )}
 
-      {/* ==========================================================
-          4. AI PRICING ASSISTANT VIEW
-      ========================================================== */}
-      {activeTab === 'ai-pricing' && (
-        <div className="space-y-6 max-w-3xl mx-auto">
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-6">
-            <div className="space-y-2">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-mono font-semibold">
-                <Bot className="w-3.5 h-3.5 text-teal-600" />
-                <span>AI SELLER AGENT</span>
-              </div>
-              <h2 className="text-2xl font-heading font-extrabold text-slate-900">
-                Suggested Market Valuation
-              </h2>
-              <p className="text-xs text-slate-500">
-                Data-backed pricing intelligence calculated from live dealer transactions, RTO transfers, and condition telemetry.
-              </p>
-            </div>
 
-            {/* Price Card */}
-            <div className="p-6 rounded-2xl bg-slate-900 text-white space-y-4">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <div>
-                  <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider block">Suggested Market Price</span>
-                  <span className="text-3xl font-heading font-extrabold text-teal-400">
-                    {MOCK_SELLER_DATA.aiPricingAssistant.suggestedPriceInr}
-                  </span>
-                  <span className="text-xs font-mono text-slate-400 block mt-0.5">
-                    ({MOCK_SELLER_DATA.aiPricingAssistant.suggestedPriceUsd})
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Price Confidence</span>
-                  <span className="text-xs font-mono font-bold text-emerald-400">
-                    {MOCK_SELLER_DATA.aiPricingAssistant.confidence}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed pt-2 border-t border-slate-800">
-                {MOCK_SELLER_DATA.aiPricingAssistant.reasoning}
-              </p>
-
-              <button
-                onClick={() => alert("Suggested price applied to listing!")}
-                className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs uppercase tracking-wider transition-all cursor-pointer"
-              >
-                Use Suggested Price
-              </button>
-            </div>
-
-            {/* Generated Description Area */}
-            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-2 text-xs">
-              <span className="text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider block">
-                AI Generated Verified Listing Description
-              </span>
-              <p className="text-slate-700 leading-relaxed font-sans">
-                {MOCK_SELLER_DATA.aiPricingAssistant.listingDescription}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ==========================================================
           5. BUYER REQUESTS & OFFERS VIEW
