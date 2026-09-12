@@ -1,0 +1,10 @@
+[project]
+organization_id = "YOUR_ORG_ID"
+project_id = "carnodes"
+
+[api]
+# Enable Edge Functions
+functions = true
+
+[auth]
+# JWT secret is managed by Supabase; no need to set here.
