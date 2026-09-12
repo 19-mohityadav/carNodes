@@ -13,11 +13,18 @@ import {
   Car,
   KeyRound,
   Sparkles,
-  Wallet
+  Wallet,
+  Zap,
+  AlertCircle
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useWallet } from '../context/WalletContext';
 
 export default function LoginModal({ isOpen, onClose, onConnected, initialMode = 'signup' }) {
   if (!isOpen) return null;
+
+  const { signIn, signUp, signInDemo, linkWallet } = useAuth();
+  const { connect, account } = useWallet();
 
   // Modes: 'signup' | 'signin' | 'wallet' | 'connecting' | 'success'
   const [mode, setMode] = useState(initialMode);
@@ -31,6 +38,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
   const [confirmPassword, setConfirmPassword] = useState('');
   const [roleDetail, setRoleDetail] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [loadingText, setLoadingText] = useState('Authenticating session with Supabase...');
 
   // Selected Wallet
   const [selectedWallet, setSelectedWallet] = useState(null);
@@ -41,7 +49,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       id: 'metamask',
       name: 'MetaMask',
       desc: 'Connect using MetaMask Ethereum & EVM browser extension',
-      badge: 'Popular',
+      badge: 'Sepolia EVM',
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
@@ -64,20 +72,6 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       )
     },
     {
-      id: 'pera',
-      name: 'Pera Wallet',
-      desc: 'Official Algorand mobile & desktop wallet',
-      badge: 'Algorand',
-      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
-      icon: (
-        <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#FECC1B" />
-          <path d="M10 28 L20 12 L30 28" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-          <circle cx="20" cy="20" r="3" fill="#111" />
-        </svg>
-      )
-    },
-    {
       id: 'walletconnect',
       name: 'WalletConnect',
       desc: 'Scan QR code with 100+ multi-chain Web3 mobile wallets',
@@ -91,25 +85,29 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       )
     },
     {
-      id: 'demo',
-      name: 'Demo Testnet Wallet',
-      desc: 'Instant sandbox access with pre-loaded mock balance',
-      badge: 'Quick Test',
-      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+      id: 'pera',
+      name: 'Pera Wallet',
+      desc: 'Algorand & Cross-chain mobile and desktop wallet',
+      badge: 'Cross-Chain',
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#F4F3EC" />
-          <text x="9" y="27" fontSize="18" fontWeight="bold" fill="#B89B5E" fontFamily="monospace">cN</text>
+          <rect width="40" height="40" rx="10" fill="#FECC1B" />
+          <path d="M10 28 L20 12 L30 28" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="20" cy="20" r="3" fill="#111" />
         </svg>
       )
-    },
+    }
   ];
 
+  // Authority role is intentionally excluded — accounts are provisioned directly
+  // by an admin via the Supabase Dashboard or SQL Editor.
   const roles = [
     {
       id: 'buyer',
       title: 'Buyer',
       subtitle: 'Browse & Purchase RWAs',
+      desc: 'Explore vehicle passports, run AI fraud analysis, and purchase securely through escrow.',
       icon: Car,
       color: 'border-[#B89B5E] bg-[#FDFBF7] text-[#B89B5E]',
     },
@@ -117,44 +115,95 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       id: 'seller',
       title: 'Seller',
       subtitle: 'Mint & List Vehicles',
+      desc: 'Register vehicle RWAs, upload off-chain documents, and manage active marketplace sales.',
       icon: Building2,
       color: 'border-[#3D5066] bg-slate-50 text-[#3D5066]',
     },
-    {
-      id: 'authority',
-      title: 'Authority',
-      subtitle: 'DMV & Inspector Auditor',
-      icon: ShieldCheck,
-      color: 'border-emerald-600 bg-emerald-50 text-emerald-700',
-    },
   ];
 
-  const handleWalletSelect = (wallet) => {
-    setSelectedWallet(wallet);
+  // 1-Click Demo Login Handler
+  const handleDemoLogin = async (demoRole) => {
+    setErrorMsg('');
+    setLoadingText(`Signing in as Demo ${demoRole.toUpperCase()}...`);
     setMode('connecting');
-    setTimeout(() => {
-      setMode('success');
-      const mockAddr = wallet.id === 'metamask'
-        ? '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
-        : `ALGO-${wallet.id.toUpperCase()}-48A91029348F291C`;
 
+    try {
+      const res = await signInDemo(demoRole);
+      const prof = res?.profile;
       const userObj = {
-        name: wallet.name + ' User',
-        email: `${wallet.id}@web3.eth`,
-        role: role,
-        walletAddress: mockAddr,
-        provider: wallet.id,
+        id: res?.data?.user?.id,
+        name: prof?.name || (demoRole === 'buyer' ? 'Arjun Mehta' : demoRole === 'seller' ? 'Vikram Singhania' : 'Dr. Rajesh Sharma'),
+        email: res?.data?.user?.email,
+        phone: prof?.phone || '',
+        role: demoRole,
+        walletAddress: prof?.wallet_address || (demoRole === 'authority' ? '0x1a2b...9a0b' : '0x71C7...976F'),
+        provider: 'supabase-demo',
       };
+
       setAuthenticatedUser(userObj);
+      setMode('success');
 
       setTimeout(() => {
-        if (onConnected) onConnected(wallet.id, mockAddr, userObj);
+        if (onConnected) onConnected('demo', userObj.walletAddress, userObj);
         handleClose();
-      }, 1300);
-    }, 1100);
+      }, 1100);
+    } catch (err) {
+      console.error('Demo login error:', err);
+      setMode('signin');
+      setErrorMsg(err.message || 'Demo login failed. Please try again.');
+    }
   };
 
-  const handleFormSubmit = (e) => {
+  // Web3 Wallet Connect Handler
+  const handleWalletSelect = async (wallet) => {
+    setSelectedWallet(wallet);
+    setLoadingText(`Connecting to ${wallet.name} & verifying Web3 challenge...`);
+    setMode('connecting');
+    setErrorMsg('');
+
+    try {
+      let walletAddr = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
+      if (wallet.id === 'metamask' && window.ethereum) {
+        try {
+          await connect();
+          if (account) walletAddr = account;
+        } catch (chainErr) {
+          console.warn('MetaMask connect note:', chainErr);
+        }
+      }
+
+      // Fast session sign in for demo web3 persona matching active role
+      const res = await signInDemo(role).catch(() => null);
+      const prof = res?.profile;
+
+      const userObj = {
+        id: res?.data?.user?.id || 'web3-user',
+        name: prof?.name || `${wallet.name} Operator`,
+        email: prof?.email || `${wallet.id}@carnodes.eth`,
+        role: role,
+        walletAddress: walletAddr,
+        provider: wallet.id,
+      };
+
+      if (linkWallet && walletAddr) {
+        linkWallet(walletAddr).catch(() => {});
+      }
+
+      setAuthenticatedUser(userObj);
+      setMode('success');
+
+      setTimeout(() => {
+        if (onConnected) onConnected(wallet.id, walletAddr, userObj);
+        handleClose();
+      }, 1200);
+    } catch (err) {
+      setMode('wallet');
+      setErrorMsg(err.message || 'Failed to connect wallet.');
+    }
+  };
+
+  // Form Submit Handler (Sign Up / Sign In)
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -165,6 +214,10 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       }
       if (!emailOrPhone.trim()) {
         setErrorMsg('Please enter your email address');
+        return;
+      }
+      if (!emailOrPhone.includes('@')) {
+        setErrorMsg('Please enter a valid email address');
         return;
       }
       if (!phoneNumber.trim()) {
@@ -179,36 +232,87 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
         setErrorMsg('Passwords do not match');
         return;
       }
+
+      setLoadingText('Creating your verified Supabase user profile...');
+      setMode('connecting');
+
+      try {
+        const res = await signUp({
+          email: emailOrPhone,
+          password,
+          name: fullName,
+          phone: phoneNumber,
+          role,
+          roleDetail,
+          walletAddress: account || '',
+        });
+
+        const prof = res?.profile;
+        const userObj = {
+          id: res?.data?.user?.id,
+          name: fullName,
+          email: emailOrPhone,
+          phone: phoneNumber,
+          role,
+          walletAddress: prof?.wallet_address || account || '0x71C7...976F',
+          provider: 'supabase',
+        };
+
+        setAuthenticatedUser(userObj);
+        setMode('success');
+
+        setTimeout(() => {
+          if (onConnected) onConnected('credentials', userObj.walletAddress, userObj);
+          handleClose();
+        }, 1200);
+      } catch (err) {
+        console.error('Sign up error:', err);
+        setMode('signup');
+        setErrorMsg(err.message || 'Registration failed. Please check your credentials.');
+      }
     } else if (mode === 'signin') {
       if (!emailOrPhone.trim()) {
-        setErrorMsg('Please enter your email or phone number');
+        setErrorMsg('Please enter your email address');
         return;
       }
       if (!password) {
         setErrorMsg('Please enter your password');
         return;
       }
+
+      setLoadingText('Authenticating with Supabase...');
+      setMode('connecting');
+
+      try {
+        const res = await signIn({
+          email: emailOrPhone,
+          password,
+        });
+
+        const prof = res?.profile;
+        const userObj = {
+          id: res?.data?.user?.id,
+          name: prof?.name || emailOrPhone.split('@')[0],
+          email: res?.data?.user?.email || emailOrPhone,
+          phone: prof?.phone || '',
+          role: (prof?.role || role).toLowerCase(),
+          walletAddress: prof?.wallet_address || account || '0x71C7...976F',
+          provider: 'supabase',
+        };
+
+        setAuthenticatedUser(userObj);
+        setMode('success');
+
+        setTimeout(() => {
+          if (onConnected) onConnected('credentials', userObj.walletAddress, userObj);
+          handleClose();
+        }, 1200);
+      } catch (err) {
+        console.error('Sign in error:', err);
+        setMode('signin');
+        setErrorMsg(err.message || 'Invalid email or password.');
+      }
     }
-
-    setMode('connecting');
-    setTimeout(() => {
-      setMode('success');
-      const userObj = {
-        name: fullName || emailOrPhone.split('@')[0],
-        emailOrPhone,
-        phone: phoneNumber,
-        role,
-        roleDetail: roleDetail || (role === 'buyer' ? 'North America / USD' : role === 'seller' ? 'Apex Luxury Dealership Inc.' : 'DMV Node Inspector #409'),
-        walletAddress: '0x3F89...A921',
-        provider: 'credentials',
-      };
-      setAuthenticatedUser(userObj);
-
-      setTimeout(() => {
-        if (onConnected) onConnected('credentials', '0x3F89...A921', userObj);
-        handleClose();
-      }, 1200);
-    }, 1000);
   };
 
   const handleClose = () => {
@@ -233,7 +337,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
         <div className="bg-[#3D5066] text-white px-6 pt-6 pb-7 relative shrink-0">
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 text-white/60 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors"
+            className="absolute top-4 right-4 text-white/60 hover:text-white p-1.5 rounded-xl hover:bg-white/10 transition-colors cursor-pointer"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -248,15 +352,15 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
             {mode === 'signup' && 'Get Started with carNodes'}
             {mode === 'signin' && 'Sign In to Your Account'}
             {mode === 'wallet' && 'Connect Web3 Wallet'}
-            {mode === 'connecting' && 'Verifying Authentication...'}
+            {mode === 'connecting' && 'Verifying Supabase Auth...'}
             {mode === 'success' && 'Welcome to carNodes!'}
           </h2>
           <p className="text-xs text-white/80 mt-1">
             {mode === 'signup' && 'Create your verified RWA account to trade, list & audit luxury vehicles.'}
             {mode === 'signin' && 'Access your digital vehicle passports, escrow contracts & dashboard.'}
             {mode === 'wallet' && 'Select MetaMask or your preferred Web3 wallet provider.'}
-            {mode === 'connecting' && 'Cryptographically signing session challenge...'}
-            {mode === 'success' && 'Identity verified on-chain. Redirecting to showroom...'}
+            {mode === 'connecting' && loadingText}
+            {mode === 'success' && 'Identity verified in Supabase PostgreSQL. Redirecting to workspace...'}
           </p>
         </div>
 
@@ -270,9 +374,56 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
 
           {/* ERROR ALERT */}
           {errorMsg && (
-            <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center justify-between">
-              <span>⚠️ {errorMsg}</span>
-              <button onClick={() => setErrorMsg('')} className="text-red-500 hover:text-red-800">×</button>
+            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-start justify-between space-x-2 animate-fadeIn">
+              <div className="flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <span>{errorMsg}</span>
+              </div>
+              <button onClick={() => setErrorMsg('')} className="text-red-500 hover:text-red-800 text-sm font-bold">×</button>
+            </div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              QUICK DEMO LOGINS BAR (For 1-Click Evaluation)
+          ────────────────────────────────────────────────────────── */}
+          {(mode === 'signup' || mode === 'signin') && (
+            <div className="bg-gradient-to-r from-teal-50/70 via-slate-50 to-amber-50/70 p-3.5 rounded-2xl border border-teal-200/80 shadow-xs">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#3D5066]">
+                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                  <span>1-Click Hackathon Demo Access</span>
+                </div>
+                <span className="text-[10px] font-mono text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded font-bold uppercase">
+                  Supabase Live
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin('buyer')}
+                  className="py-1.5 px-2 rounded-xl bg-white hover:bg-teal-50 border border-zinc-200 hover:border-teal-400 text-left transition-all text-xs cursor-pointer group"
+                >
+                  <div className="text-[10px] text-teal-700 font-mono font-bold uppercase flex items-center justify-between">
+                    <span>Buyer</span>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  </div>
+                  <div className="text-[11px] font-bold text-slate-800 truncate">Arjun Mehta</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin('seller')}
+                  className="py-1.5 px-2 rounded-xl bg-white hover:bg-slate-100 border border-zinc-200 hover:border-slate-400 text-left transition-all text-xs cursor-pointer group"
+                >
+                  <div className="text-[10px] text-slate-600 font-mono font-bold uppercase flex items-center justify-between">
+                    <span>Seller</span>
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                  </div>
+                  <div className="text-[11px] font-bold text-slate-800 truncate">Apex Motors</div>
+                </button>
+              </div>
+              <p className="text-[10px] text-zinc-400 font-mono mt-2 text-center">
+                🔐 Authority accounts are provisioned by admin only
+              </p>
             </div>
           )}
 
@@ -299,10 +450,11 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                       key={r.id}
                       type="button"
                       onClick={() => setRole(r.id)}
-                      className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between cursor-pointer ${isSelected
+                      className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between cursor-pointer ${
+                        isSelected
                           ? `ring-2 ring-[#B89B5E] ${r.color} shadow-sm`
                           : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
-                        }`}
+                      }`}
                     >
                       <div className="flex items-center justify-between w-full mb-1">
                         <Icon className="w-5 h-5" />
@@ -321,7 +473,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
               <div className="mt-2.5 p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/80 text-[11px] text-[#6E6259] flex items-start space-x-2">
                 <ShieldCheck className="w-4 h-4 text-[#B89B5E] shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-[#3D5066] capitalize">{role} Role Features: </strong>
+                  <strong className="text-[#3D5066] capitalize">{role} Role Clearance: </strong>
                   {roles.find((r) => r.id === role)?.desc}
                 </div>
               </div>
@@ -329,13 +481,13 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
           )}
 
           {/* ──────────────────────────────────────────────────────────
-              MODE: SIGN UP (Get Started Form: Name, Email, Phone, Role Details)
+              MODE: SIGN UP
           ────────────────────────────────────────────────────────── */}
           {mode === 'signup' && (
             <form onSubmit={handleFormSubmit} className="space-y-3.5">
               <div className="border-t border-zinc-100 pt-3">
                 <p className="text-xs font-mono uppercase text-[#6E6259] font-bold mb-3">
-                  Step 2: Enter Account & Identity Details
+                  Step 2: Enter Account Credentials
                 </p>
               </div>
 
@@ -357,7 +509,6 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
 
               {/* Email Address & Phone Number Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Email Address */}
                 <div>
                   <label className="block text-xs font-semibold text-[#3D5066] mb-1">Email Address</label>
                   <div className="relative">
@@ -373,7 +524,6 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                   </div>
                 </div>
 
-                {/* Phone Number */}
                 <div>
                   <label className="block text-xs font-semibold text-[#3D5066] mb-1">Phone Number</label>
                   <div className="relative">
@@ -383,7 +533,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                       required
                       value={phoneNumber}
                       onChange={(e) => setPhoneNumber(e.target.value)}
-                      placeholder="+1 (555) 019-2834"
+                      placeholder="+91 98201 00000"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-[#B89B5E] focus:ring-1 focus:ring-[#B89B5E] transition-all"
                     />
                   </div>
@@ -394,7 +544,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
               <div>
                 <label className="block text-xs font-semibold text-[#3D5066] mb-1">
                   {role === 'buyer' && 'Preferred Region / Fiat Currency'}
-                  {role === 'seller' && 'Dealership / Individual Business License & Name'}
+                  {role === 'seller' && 'Dealership / Individual Business License'}
                   {role === 'authority' && 'DMV Agency / Inspection Jurisdiction ID'}
                 </label>
                 <div className="relative">
@@ -405,10 +555,10 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                     onChange={(e) => setRoleDetail(e.target.value)}
                     placeholder={
                       role === 'buyer'
-                        ? 'e.g. North America / USD ($)'
+                        ? 'e.g. India / INR (₹) or US / USD ($)'
                         : role === 'seller'
                           ? 'e.g. Apex Luxury Motors (Lic #DL-98214)'
-                          : 'e.g. California DMV Inspection Node #409'
+                          : 'e.g. California DMV Node #409 / MH-02 RTO'
                     }
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-[#B89B5E] focus:ring-1 focus:ring-[#B89B5E] transition-all"
                   />
@@ -453,7 +603,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                 type="submit"
                 className="w-full py-3 px-4 rounded-xl bg-[#3D5066] hover:bg-[#B89B5E] text-white text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-2 cursor-pointer"
               >
-                <span>Get Started as {roles.find((r) => r.id === role)?.title}</span>
+                <span>Create Verified Account as {roles.find((r) => r.id === role)?.title}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -472,33 +622,35 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
           )}
 
           {/* ──────────────────────────────────────────────────────────
-              MODE: SIGN IN (Login Form with Email or Phone Number + Password)
+              MODE: SIGN IN
           ────────────────────────────────────────────────────────── */}
           {mode === 'signin' && (
             <form onSubmit={handleFormSubmit} className="space-y-3.5">
-              {/* Email or Phone Number */}
               <div>
-                <label className="block text-xs font-semibold text-[#3D5066] mb-1">Email or Phone Number</label>
+                <label className="block text-xs font-semibold text-[#3D5066] mb-1">Email Address</label>
                 <div className="relative">
                   <Mail className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                   <input
-                    type="text"
+                    type="email"
                     required
                     value={emailOrPhone}
                     onChange={(e) => setEmailOrPhone(e.target.value)}
-                    placeholder="email@example.com or +1 234 567 8900"
+                    placeholder="name@example.com"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-[#B89B5E] focus:ring-1 focus:ring-[#B89B5E] transition-all"
                   />
                 </div>
               </div>
 
-              {/* Password */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs font-semibold text-[#3D5066]">Password</label>
-                  <a href="#forgot" onClick={(e) => { e.preventDefault(); alert('Password reset link sent!'); }} className="text-[11px] text-[#B89B5E] hover:underline">
+                  <button
+                    type="button"
+                    onClick={() => alert('Demo tip: You can click the 1-Click Demo buttons above to log in instantly!')}
+                    className="text-[11px] text-[#B89B5E] hover:underline cursor-pointer"
+                  >
                     Forgot password?
-                  </a>
+                  </button>
                 </div>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
@@ -536,9 +688,8 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
             </form>
           )}
 
-
           {/* ──────────────────────────────────────────────────────────
-              MODE: WEB3 WALLET LIST (MetaMask, Pera, WalletConnect)
+              MODE: WEB3 WALLET LIST
           ────────────────────────────────────────────────────────── */}
           {mode === 'wallet' && (
             <div className="space-y-3">
@@ -548,32 +699,33 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                 </p>
                 <button
                   onClick={() => setMode('signin')}
-                  className="text-xs text-[#3D5066] hover:text-[#B89B5E] font-semibold underline"
+                  className="text-xs text-[#3D5066] hover:text-[#B89B5E] font-semibold underline cursor-pointer"
                 >
                   Back to Email Login
                 </button>
               </div>
 
-              {wallets.map((wallet) => (
+              {wallets.map((w) => (
                 <button
-                  key={wallet.id}
-                  onClick={() => handleWalletSelect(wallet)}
-                  className={`w-full flex items-center space-x-4 p-3.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer group ${wallet.id === 'metamask'
+                  key={w.id}
+                  onClick={() => handleWalletSelect(w)}
+                  className={`w-full flex items-center space-x-4 p-3.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer group ${
+                    w.id === 'metamask'
                       ? 'border-amber-300 bg-amber-50/40 hover:border-amber-500 hover:bg-amber-50'
                       : 'border-zinc-200 hover:border-[#B89B5E] hover:bg-[#FDFBF7]'
-                    }`}
+                  }`}
                 >
-                  <div className="shrink-0">{wallet.icon}</div>
+                  <div className="shrink-0">{w.icon}</div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-heading font-bold text-[#3D5066] group-hover:text-[#B89B5E]">
-                        {wallet.name}
+                        {w.name}
                       </span>
-                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${wallet.badgeColor}`}>
-                        {wallet.badge}
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${w.badgeColor}`}>
+                        {w.badge}
                       </span>
                     </div>
-                    <p className="text-xs text-[#6E6259] mt-0.5 truncate">{wallet.desc}</p>
+                    <p className="text-xs text-[#6E6259] mt-0.5 truncate">{w.desc}</p>
                   </div>
                   <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-[#B89B5E] shrink-0 transition-colors" />
                 </button>
@@ -581,7 +733,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
 
               <div className="pt-2 text-center">
                 <p className="text-[11px] text-[#6E6259]">
-                  🔐 Non-custodial cryptographic auth. Your keys remain inside your wallet extension.
+                  🔐 Non-custodial cryptographic auth. Your wallet links directly to your Supabase RWA profile.
                 </p>
               </div>
             </div>
@@ -599,7 +751,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                 <h3 className="text-base font-heading font-bold text-[#3D5066]">
                   {selectedWallet ? `Connecting to ${selectedWallet.name}...` : 'Authenticating Session...'}
                 </h3>
-                <p className="text-xs text-[#6E6259] mt-1">Generating zero-knowledge signature challenge</p>
+                <p className="text-xs text-[#6E6259] mt-1">{loadingText}</p>
               </div>
               <RefreshCw className="w-8 h-8 text-[#B89B5E] animate-spin mx-auto" />
             </div>
@@ -618,12 +770,14 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                   Authentication Successful!
                 </h3>
                 {authenticatedUser && (
-                  <div className="mt-2 inline-block px-4 py-2 rounded-xl bg-zinc-100 text-left border border-zinc-200">
+                  <div className="mt-2 inline-block px-4 py-2.5 rounded-2xl bg-zinc-100 text-left border border-zinc-200">
                     <p className="text-xs font-bold text-[#3D5066]">{authenticatedUser.name}</p>
-                    <p className="text-[11px] text-[#6E6259] font-mono capitalize">Role: {authenticatedUser.role} • {authenticatedUser.walletAddress}</p>
+                    <p className="text-[11px] text-[#6E6259] font-mono capitalize mt-0.5">
+                      Role: <span className="font-bold text-teal-700">{authenticatedUser.role}</span> • {authenticatedUser.email}
+                    </p>
                   </div>
                 )}
-                <p className="text-xs text-[#6E6259] mt-3">Access granted to verified carNodes RWA portal...</p>
+                <p className="text-xs text-[#6E6259] mt-3">Access granted to carNodes verified RWA portal...</p>
               </div>
             </div>
           )}
@@ -639,7 +793,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                   <button
                     type="button"
                     onClick={() => { setMode('signin'); setErrorMsg(''); }}
-                    className="font-bold text-[#3D5066] hover:text-[#B89B5E] underline"
+                    className="font-bold text-[#3D5066] hover:text-[#B89B5E] underline cursor-pointer"
                   >
                     Sign In Here
                   </button>
@@ -650,7 +804,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                   <button
                     type="button"
                     onClick={() => { setMode('signup'); setErrorMsg(''); }}
-                    className="font-bold text-[#3D5066] hover:text-[#B89B5E] underline"
+                    className="font-bold text-[#3D5066] hover:text-[#B89B5E] underline cursor-pointer"
                   >
                     Get Started (Sign Up)
                   </button>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { VEHICLES } from './data/vehicles';
 import Navbar from './components/Navbar';
 import HeroShowroom from './components/HeroShowroom';
@@ -18,11 +18,14 @@ import MarketplaceModal from './components/MarketplaceModal';
 import ListVehicleModal from './components/ListVehicleModal';
 import VerifyVinModal from './components/VerifyVinModal';
 import DashboardContainer from './components/dashboard/DashboardContainer';
+import { useAuth } from './context/AuthContext';
+import { useWallet } from './context/WalletContext';
 
 export default function App() {
+  const { isAuthenticated, user, profile, role, signOut, loading: authLoading } = useAuth();
+  const { account, isConnected } = useWallet();
+
   const [activeCarIndex, setActiveCarIndex] = useState(0);
-  const [walletConnected, setWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
 
   // App View State: 'landing' | 'dashboard'
@@ -36,14 +39,40 @@ export default function App() {
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
 
+  // Synchronize authenticated user from AuthContext
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const activeProf = {
+        id: user.id,
+        name: profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        email: user.email,
+        phone: profile?.phone || user.user_metadata?.phone || '',
+        role: role,
+        walletAddress: profile?.wallet_address || account || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+      };
+      setCurrentUser(activeProf);
+      setDashboardRole(role || 'buyer');
+    } else if (!authLoading && !isAuthenticated) {
+      setCurrentUser(null);
+      setViewMode('landing');
+    }
+  }, [isAuthenticated, user, profile, role, account, authLoading]);
+
+  // Auto-navigate to dashboard when user authenticates
+  useEffect(() => {
+    if (isAuthenticated && !authLoading && viewMode === 'landing') {
+      setDashboardRole(role || 'buyer');
+      setViewMode('dashboard');
+      setIsLoginOpen(false);
+    }
+  }, [isAuthenticated, authLoading]); // eslint-disable-line
+
   const handleOpenAuth = (mode = 'signup') => {
     setAuthMode(mode);
     setIsLoginOpen(true);
   };
 
   const handleConnected = (provider, address, userObj) => {
-    setWalletConnected(true);
-    setWalletAddress(address);
     if (userObj) {
       setCurrentUser(userObj);
       setDashboardRole(userObj.role || 'buyer');
@@ -51,15 +80,14 @@ export default function App() {
     }
   };
 
-  const handleLogout = () => {
-    setWalletConnected(false);
-    setWalletAddress('');
+  const handleLogout = async () => {
+    await signOut();
     setCurrentUser(null);
     setViewMode('landing');
   };
 
-  const handleOpenDashboard = (role = 'buyer') => {
-    setDashboardRole(role);
+  const handleOpenDashboard = (targetRole = 'buyer') => {
+    setDashboardRole(targetRole);
     setViewMode('dashboard');
   };
 
@@ -98,7 +126,7 @@ export default function App() {
           onOpenVerifyModal={() => setIsVerifyModalOpen(true)}
         />
 
-        {/* 3. TRUST STRIP — 4 cards (AI Assisted removed) */}
+        {/* 3. TRUST STRIP */}
         <TrustStrip />
 
         {/* 4. COMPARISON MATRIX */}
@@ -158,14 +186,14 @@ export default function App() {
           if (idx !== -1) setActiveCarIndex(idx);
         }}
         onOpenWalletModal={() => setIsLoginOpen(true)}
-        walletConnected={walletConnected}
+        walletConnected={isConnected}
       />
 
       <ListVehicleModal
         isOpen={isListModalOpen}
         onClose={() => setIsListModalOpen(false)}
         onOpenWalletModal={() => setIsLoginOpen(true)}
-        walletConnected={walletConnected}
+        walletConnected={isConnected}
       />
 
       <VerifyVinModal
