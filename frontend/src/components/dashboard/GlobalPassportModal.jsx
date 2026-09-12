@@ -29,11 +29,11 @@ export default function GlobalPassportModal({
   onUpdateDocsBySeller,
   onProceedPurchaseByBuyer
 }) {
-  if (!isOpen || !vehicle) return null;
-
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'timeline' | 'documents' | 'blockchain'
   const [docUpdatedToast, setDocUpdatedToast] = useState(false);
   const [approvedToast, setApprovedToast] = useState(false);
+
+  if (!isOpen || !vehicle) return null;
 
   const priceInr = vehicle.priceInr || `₹${((vehicle.priceUsd || 45000) * 85).toLocaleString('en-IN')}`;
   const priceUsd = vehicle.priceUsd ? `$${vehicle.priceUsd.toLocaleString()}` : '$48,500';
