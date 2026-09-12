@@ -34,7 +34,7 @@ export default function EscrowSection({ onOpenWalletModal }) {
   return (
     <section id="escrow" className="py-20 bg-[#FDFBF7] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-300 text-xs font-mono text-emerald-800 mb-4">
@@ -54,9 +54,9 @@ export default function EscrowSection({ onOpenWalletModal }) {
 
         {/* VISUAL FLOW DIAGRAM (BUYER -> ESCROW -> SELLER) */}
         <div className="bg-white p-8 rounded-3xl border border-zinc-200 shadow-xl mb-12">
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            
+
             {/* BUYER NODE */}
             <div className="bg-[#FDFBF7] p-6 rounded-2xl border border-zinc-200 text-center relative group hover:border-[#FF3B30] transition-colors">
               <div className="w-14 h-14 rounded-2xl bg-[#2B2521] text-white mx-auto flex items-center justify-center mb-3">
@@ -128,11 +128,10 @@ export default function EscrowSection({ onOpenWalletModal }) {
               <button
                 key={st.num}
                 onClick={() => setCurrentStep(st.num)}
-                className={`p-4 rounded-xl border text-left transition-all ${
-                  currentStep >= st.num
+                className={`p-4 rounded-xl border text-left transition-all ${currentStep >= st.num
                     ? 'bg-white border-[#FF3B30] shadow-sm'
                     : 'bg-zinc-200/60 border-zinc-300 text-zinc-500'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className={`text-xs font-mono font-bold ${currentStep >= st.num ? 'text-[#FF3B30]' : 'text-zinc-400'}`}>

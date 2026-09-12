@@ -45,21 +45,21 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       badgeColor: 'bg-amber-100 text-amber-800 border-amber-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#F6851B" fillOpacity="0.15"/>
-          <path d="M30.6 11.2L20.8 17.9L22.5 10.3L30.6 11.2Z" fill="#E4761B"/>
-          <path d="M9.4 11.2L17.5 10.3L19.2 17.9L9.4 11.2Z" fill="#E4761B"/>
-          <path d="M27.2 25.1L24.8 28.8L30 30.2L31.4 25.2L27.2 25.1Z" fill="#E4761B"/>
-          <path d="M8.6 25.2L10 30.2L15.2 28.8L12.8 25.1L8.6 25.2Z" fill="#E4761B"/>
-          <path d="M14.6 18.2L13.2 20.3L18.4 20.5L18.6 14.8L14.6 18.2Z" fill="#E4761B"/>
-          <path d="M25.4 18.2L21.4 14.8L21.6 20.5L26.8 20.3L25.4 18.2Z" fill="#E4761B"/>
-          <path d="M15.2 28.8L18.4 27.2L15.8 25.2L15.2 28.8Z" fill="#D7C1B3"/>
-          <path d="M24.8 28.8L24.2 25.2L21.6 27.2L24.8 28.8Z" fill="#D7C1B3"/>
-          <path d="M21.6 27.2L24.2 25.2L25.4 21.6L21.5 21.7L21.6 27.2Z" fill="#233447"/>
-          <path d="M18.4 27.2L18.5 21.7L14.6 21.6L15.8 25.2L18.4 27.2Z" fill="#233447"/>
-          <path d="M9.4 11.2L12.8 17.8L14.6 18.2L18.6 14.8L17.5 10.3L9.4 11.2Z" fill="#E4761B"/>
-          <path d="M30.6 11.2L22.5 10.3L21.4 14.8L25.4 18.2L27.2 17.8L30.6 11.2Z" fill="#E4761B"/>
-          <path d="M18.4 20.5L13.2 20.3L12.8 25.1L14.6 21.6L18.4 20.5Z" fill="#CD6116"/>
-          <path d="M21.6 20.5L25.4 21.6L27.2 25.1L26.8 20.3L21.6 20.5Z" fill="#CD6116"/>
+          <rect width="40" height="40" rx="10" fill="#F6851B" fillOpacity="0.15" />
+          <path d="M30.6 11.2L20.8 17.9L22.5 10.3L30.6 11.2Z" fill="#E4761B" />
+          <path d="M9.4 11.2L17.5 10.3L19.2 17.9L9.4 11.2Z" fill="#E4761B" />
+          <path d="M27.2 25.1L24.8 28.8L30 30.2L31.4 25.2L27.2 25.1Z" fill="#E4761B" />
+          <path d="M8.6 25.2L10 30.2L15.2 28.8L12.8 25.1L8.6 25.2Z" fill="#E4761B" />
+          <path d="M14.6 18.2L13.2 20.3L18.4 20.5L18.6 14.8L14.6 18.2Z" fill="#E4761B" />
+          <path d="M25.4 18.2L21.4 14.8L21.6 20.5L26.8 20.3L25.4 18.2Z" fill="#E4761B" />
+          <path d="M15.2 28.8L18.4 27.2L15.8 25.2L15.2 28.8Z" fill="#D7C1B3" />
+          <path d="M24.8 28.8L24.2 25.2L21.6 27.2L24.8 28.8Z" fill="#D7C1B3" />
+          <path d="M21.6 27.2L24.2 25.2L25.4 21.6L21.5 21.7L21.6 27.2Z" fill="#233447" />
+          <path d="M18.4 27.2L18.5 21.7L14.6 21.6L15.8 25.2L18.4 27.2Z" fill="#233447" />
+          <path d="M9.4 11.2L12.8 17.8L14.6 18.2L18.6 14.8L17.5 10.3L9.4 11.2Z" fill="#E4761B" />
+          <path d="M30.6 11.2L22.5 10.3L21.4 14.8L25.4 18.2L27.2 17.8L30.6 11.2Z" fill="#E4761B" />
+          <path d="M18.4 20.5L13.2 20.3L12.8 25.1L14.6 21.6L18.4 20.5Z" fill="#CD6116" />
+          <path d="M21.6 20.5L25.4 21.6L27.2 25.1L26.8 20.3L21.6 20.5Z" fill="#CD6116" />
         </svg>
       )
     },
@@ -71,9 +71,9 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#FECC1B"/>
-          <path d="M10 28 L20 12 L30 28" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="20" cy="20" r="3" fill="#111"/>
+          <rect width="40" height="40" rx="10" fill="#FECC1B" />
+          <path d="M10 28 L20 12 L30 28" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx="20" cy="20" r="3" fill="#111" />
         </svg>
       )
     },
@@ -85,7 +85,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       badgeColor: 'bg-blue-100 text-blue-800 border-blue-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#3B99FC"/>
+          <rect width="40" height="40" rx="10" fill="#3B99FC" />
           <path d="M12 20 Q20 12 28 20 Q24 24 20 20 Q16 24 12 20Z" fill="white" />
         </svg>
       )
@@ -98,7 +98,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
       icon: (
         <svg viewBox="0 0 40 40" className="w-9 h-9" fill="none">
-          <rect width="40" height="40" rx="10" fill="#F4F3EC"/>
+          <rect width="40" height="40" rx="10" fill="#F4F3EC" />
           <text x="9" y="27" fontSize="18" fontWeight="bold" fill="#B89B5E" fontFamily="monospace">cN</text>
         </svg>
       )
@@ -137,7 +137,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
       const mockAddr = wallet.id === 'metamask'
         ? '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
         : `ALGO-${wallet.id.toUpperCase()}-48A91029348F291C`;
-      
+
       const userObj = {
         name: wallet.name + ' User',
         email: `${wallet.id}@web3.eth`,
@@ -228,7 +228,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
       <div className="bg-white w-full max-w-lg rounded-3xl border border-zinc-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
+
         {/* Header */}
         <div className="bg-[#3D5066] text-white px-6 pt-6 pb-7 relative shrink-0">
           <button
@@ -299,11 +299,10 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                       key={r.id}
                       type="button"
                       onClick={() => setRole(r.id)}
-                      className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between cursor-pointer ${
-                        isSelected
+                      className={`p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between cursor-pointer ${isSelected
                           ? `ring-2 ring-[#B89B5E] ${r.color} shadow-sm`
                           : 'border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between w-full mb-1">
                         <Icon className="w-5 h-5" />
@@ -408,8 +407,8 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                       role === 'buyer'
                         ? 'e.g. North America / USD ($)'
                         : role === 'seller'
-                        ? 'e.g. Apex Luxury Motors (Lic #DL-98214)'
-                        : 'e.g. California DMV Inspection Node #409'
+                          ? 'e.g. Apex Luxury Motors (Lic #DL-98214)'
+                          : 'e.g. California DMV Inspection Node #409'
                     }
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-zinc-200 text-sm focus:outline-none focus:border-[#B89B5E] focus:ring-1 focus:ring-[#B89B5E] transition-all"
                   />
@@ -559,11 +558,10 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                 <button
                   key={wallet.id}
                   onClick={() => handleWalletSelect(wallet)}
-                  className={`w-full flex items-center space-x-4 p-3.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer group ${
-                    wallet.id === 'metamask'
+                  className={`w-full flex items-center space-x-4 p-3.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer group ${wallet.id === 'metamask'
                       ? 'border-amber-300 bg-amber-50/40 hover:border-amber-500 hover:bg-amber-50'
                       : 'border-zinc-200 hover:border-[#B89B5E] hover:bg-[#FDFBF7]'
-                  }`}
+                    }`}
                 >
                   <div className="shrink-0">{wallet.icon}</div>
                   <div className="flex-1 min-w-0">

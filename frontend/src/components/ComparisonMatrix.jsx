@@ -8,7 +8,7 @@ export default function ComparisonMatrix() {
   return (
     <section className="py-20 bg-[#FDFBF7] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <span className="text-xs font-mono uppercase tracking-widest text-[#FF3B30] font-semibold">
@@ -25,25 +25,22 @@ export default function ComparisonMatrix() {
           <div className="mt-6 inline-flex p-1 rounded-xl bg-zinc-200/80 border border-zinc-300">
             <button
               onClick={() => setViewMode('all')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                viewMode === 'all' ? 'bg-[#2B2521] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${viewMode === 'all' ? 'bg-[#2B2521] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
+                }`}
             >
               Full Comparison Matrix
             </button>
             <button
               onClick={() => setViewMode('buyer')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                viewMode === 'buyer' ? 'bg-[#FF3B30] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${viewMode === 'buyer' ? 'bg-[#FF3B30] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
+                }`}
             >
               Buyer Protection
             </button>
             <button
               onClick={() => setViewMode('seller')}
-              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
-                viewMode === 'seller' ? 'bg-[#B36B39] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
-              }`}
+              className={`px-4 py-2 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${viewMode === 'seller' ? 'bg-[#B36B39] text-white shadow-xs' : 'text-[#6E6259] hover:text-[#111111]'
+                }`}
             >
               Seller Efficiency
             </button>
@@ -52,7 +49,7 @@ export default function ComparisonMatrix() {
 
         {/* COMPARISON TABLE / MATRIX */}
         <div className="bg-white rounded-3xl border border-zinc-200 shadow-xl overflow-hidden">
-          
+
           {/* Table Header */}
           <div className="grid grid-cols-1 md:grid-cols-12 bg-[#2B2521] text-white p-5 text-xs font-mono font-bold uppercase tracking-wider">
             <div className="md:col-span-3 text-zinc-400">Market Risk Vector</div>
