@@ -34,7 +34,7 @@ export default function ListVehicleModal({ isOpen, onClose, onOpenWalletModal, w
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fadeIn">
       <div className="bg-[#FDFBF7] w-full max-w-2xl rounded-3xl border border-zinc-300 shadow-2xl p-6 sm:p-8 relative">
-        
+
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -61,9 +61,8 @@ export default function ListVehicleModal({ isOpen, onClose, onOpenWalletModal, w
           {['1. VIN Entry', '2. AI Valuation', '3. RWA Mint'].map((name, i) => (
             <div
               key={i}
-              className={`h-2 rounded-full transition-all ${
-                step >= i + 1 ? 'bg-[#FF3B30]' : 'bg-zinc-200'
-              }`}
+              className={`h-2 rounded-full transition-all ${step >= i + 1 ? 'bg-[#FF3B30]' : 'bg-zinc-200'
+                }`}
             ></div>
           ))}
         </div>

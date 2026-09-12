@@ -14,7 +14,7 @@ export default function TechStackSection() {
   return (
     <section id="tech-stack" className="py-20 bg-[#FDFBF7] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-mono uppercase tracking-widest text-[#B36B39] font-semibold">
@@ -48,7 +48,7 @@ export default function TechStackSection() {
                 <h3 className="text-xl font-heading font-extrabold text-[#111111] mb-1">
                   {item.name}
                 </h3>
-                
+
                 <span className="text-xs font-mono font-bold text-[#B36B39] block mb-3">
                   {item.role}
                 </span>

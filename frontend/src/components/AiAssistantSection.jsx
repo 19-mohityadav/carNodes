@@ -80,7 +80,7 @@ export default function AiAssistantSection({ onOpenMarketplace, onOpenVerifyModa
   return (
     <section id="ai-assistant" className="py-20 bg-[#FFFFFF] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#2B2521] text-white text-xs font-mono mb-4">
@@ -99,7 +99,7 @@ export default function AiAssistantSection({ onOpenMarketplace, onOpenVerifyModa
 
         {/* INTERACTIVE CHAT MOCKUP CONTAINER */}
         <div className="max-w-4xl mx-auto bg-[#FDFBF7] rounded-3xl border border-zinc-200 shadow-2xl overflow-hidden">
-          
+
           {/* Chat Window Header Bar */}
           <div className="bg-[#2B2521] text-white p-4 px-6 flex items-center justify-between">
             <div className="flex items-center space-x-3">
@@ -154,20 +154,19 @@ export default function AiAssistantSection({ onOpenMarketplace, onOpenVerifyModa
                 )}
 
                 <div className={`max-w-xl space-y-3 ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}>
-                  
+
                   {/* Bubble */}
-                  <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                    msg.sender === 'user'
+                  <div className={`p-4 rounded-2xl text-sm leading-relaxed ${msg.sender === 'user'
                       ? 'bg-[#2B2521] text-white rounded-tr-xs font-medium'
                       : 'bg-white border border-zinc-200 text-[#111111] shadow-xs rounded-tl-xs'
-                  }`}>
+                    }`}>
                     {msg.text}
                   </div>
 
                   {/* AI Metadata & Action Card */}
                   {msg.sender === 'ai' && msg.carDetails && (
                     <div className="bg-[#FDFBF7] p-4 rounded-xl border border-zinc-200 space-y-3 text-xs">
-                      
+
                       <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
                         <span className="font-heading font-bold text-[#111111]">{msg.carDetails.model}</span>
                         <span className="font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded font-bold">

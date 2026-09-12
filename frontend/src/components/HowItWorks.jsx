@@ -15,7 +15,7 @@ export default function HowItWorks() {
   return (
     <section id="how-it-works" className="py-20 bg-[#FFFFFF] border-b border-zinc-200 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-xs font-mono uppercase tracking-widest text-[#B36B39] font-semibold">
@@ -33,7 +33,7 @@ export default function HowItWorks() {
         <div className="relative mb-16 hidden lg:block">
           {/* Horizontal Line */}
           <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-zinc-200 -translate-y-1/2 z-0"></div>
-          
+
           <div className="grid grid-cols-4 gap-4 relative z-10">
             {HOW_IT_WORKS_STEPS.map((step, idx) => {
               const isActive = idx === activeStep;
@@ -41,19 +41,17 @@ export default function HowItWorks() {
                 <button
                   key={idx}
                   onClick={() => setActiveStep(idx)}
-                  className={`text-left p-6 rounded-2xl border transition-all duration-300 relative cursor-pointer focus:outline-none ${
-                    isActive
+                  className={`text-left p-6 rounded-2xl border transition-all duration-300 relative cursor-pointer focus:outline-none ${isActive
                       ? 'bg-[#FDFBF7] border-[#FF3B30] shadow-xl scale-105'
                       : 'bg-white border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between mb-4">
                     <span className={`font-mono text-2xl font-black ${isActive ? 'text-[#FF3B30]' : 'text-zinc-400'}`}>
                       {step.num}
                     </span>
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                      isActive ? 'bg-white border-[#FF3B30]' : 'bg-zinc-100 border-zinc-200'
-                    }`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${isActive ? 'bg-white border-[#FF3B30]' : 'bg-zinc-100 border-zinc-200'
+                      }`}>
                       {stepIcons[idx]}
                     </div>
                   </div>
@@ -61,7 +59,7 @@ export default function HowItWorks() {
                   <h3 className="text-lg font-heading font-extrabold text-[#111111] uppercase tracking-tight mb-1">
                     {step.title}
                   </h3>
-                  
+
                   <span className="text-xs font-mono text-[#B36B39] block mb-2 font-medium">
                     {step.subtitle}
                   </span>
@@ -100,7 +98,7 @@ export default function HowItWorks() {
         {/* Active Step Deep-Dive Card Display */}
         <div className="bg-[#2B2521] text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden">
           <div className="absolute right-0 top-0 w-96 h-96 bg-[#FF3B30]/10 rounded-full blur-3xl pointer-events-none"></div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative z-10">
             <div className="md:col-span-8">
               <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-md bg-white/10 border border-white/20 text-xs font-mono text-[#FF3B30] mb-3">

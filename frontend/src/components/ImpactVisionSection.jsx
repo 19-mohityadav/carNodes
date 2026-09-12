@@ -43,7 +43,7 @@ export default function ImpactVisionSection() {
   return (
     <section className="py-20 bg-[#FFFFFF] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-mono uppercase tracking-widest text-[#FF3B30] font-semibold">
@@ -89,17 +89,15 @@ export default function ImpactVisionSection() {
             {roadmapPhases.map((rp, idx) => (
               <div
                 key={idx}
-                className={`p-6 rounded-2xl border transition-all ${
-                  idx === 0
+                className={`p-6 rounded-2xl border transition-all ${idx === 0
                     ? 'bg-white/10 border-[#FF3B30] shadow-lg'
                     : 'bg-white/5 border-white/10 hover:border-white/20'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-mono font-bold text-[#FF3B30]">{rp.phase}</span>
-                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                    idx === 0 ? 'bg-[#FF3B30] text-white' : 'bg-white/10 text-zinc-300'
-                  }`}>
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${idx === 0 ? 'bg-[#FF3B30] text-white' : 'bg-white/10 text-zinc-300'
+                    }`}>
                     {rp.status}
                   </span>
                 </div>

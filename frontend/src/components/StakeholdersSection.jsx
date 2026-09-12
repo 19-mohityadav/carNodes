@@ -17,7 +17,7 @@ export default function StakeholdersSection({ onOpenMarketplace, onOpenListModal
   return (
     <section id="stakeholders" className="py-20 bg-[#FFFFFF] border-b border-zinc-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-14">
           <span className="text-xs font-mono uppercase tracking-widest text-[#B36B39] font-semibold">
@@ -39,11 +39,10 @@ export default function StakeholdersSection({ onOpenMarketplace, onOpenListModal
               <button
                 key={stk.id}
                 onClick={() => setActiveTab(stk.id)}
-                className={`flex items-center space-x-2 px-6 py-3 rounded-xl border text-xs font-heading font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer ${
-                  isActive
-                    ? 'bg-[#2B2521] text-white border-[#2B2521] shadow-lg scale-105'
-                    : 'bg-[#FDFBF7] text-[#6E6259] border-zinc-300 hover:border-zinc-400 hover:text-[#111111]'
-                }`}
+                className={`flex items-center space-x-2 px-6 py-3 rounded-xl border text-xs font-heading font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer ${isActive
+                  ? 'bg-[#2B2521] text-white border-[#2B2521] shadow-lg scale-105'
+                  : 'bg-[#FDFBF7] text-[#6E6259] border-zinc-300 hover:border-zinc-400 hover:text-[#111111]'
+                  }`}
               >
                 <span className={isActive ? 'text-[#FF3B30]' : 'text-[#6E6259]'}>
                   {roleIcons[stk.id]}
@@ -57,7 +56,7 @@ export default function StakeholdersSection({ onOpenMarketplace, onOpenListModal
         {/* ACTIVE ROLE FEATURE CARD */}
         <div className="bg-[#FDFBF7] rounded-3xl border border-zinc-200 p-8 sm:p-12 shadow-xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            
+
             <div className="lg:col-span-7">
               <span className="inline-block text-xs font-mono font-bold uppercase tracking-wider bg-[#FF3B30] text-white px-3 py-1 rounded-md mb-4">
                 {currentRole.badge}

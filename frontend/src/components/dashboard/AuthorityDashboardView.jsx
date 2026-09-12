@@ -1,646 +1,531 @@
 import React, { useState } from 'react';
 import {
   ShieldCheck,
-  CheckCircle2,
+  ListOrdered,
+  BookOpenCheck,
+  CheckSquare,
+  ArrowRightLeft,
+  Files,
   AlertTriangle,
-  FileText,
-  Clock,
+  History,
+  CheckCircle,
+  User,
+  CheckCircle2,
+  Award,
+  ArrowRight,
   Search,
   Filter,
+  Eye,
   Check,
   X,
-  Building2,
-  FileCheck,
-  Lock,
-  ArrowRight,
-  Eye,
+  FileText,
   AlertCircle,
   ExternalLink,
-  ChevronRight,
-  ArrowLeft,
-  HelpCircle,
-  UserCheck,
-  Sparkles,
-  RefreshCw,
-  SlidersHorizontal,
-  CheckSquare
+  Cpu,
+  Building2,
+  Lock,
+  FileBadge2
 } from 'lucide-react';
-import GlobalVehicleCard from './GlobalVehicleCard';
+import { MOCK_AUTHORITY_DATA } from '../../data/dashboardData';
+import { VEHICLES } from '../../data/vehicles';
 
 export default function AuthorityDashboardView({
-  vehicles = [],
-  activeTab = 'dashboard',
-  onOpenPassport,
-  onSelectVehicle,
-  onNavigateTab
+  activeTab,
+  onSelectTab,
+  onOpenPassport
 }) {
-  const safeVehicles = Array.isArray(vehicles) && vehicles.length > 0 ? vehicles : [];
-
-  // Mock Queue Data matching prompt spec
-  const queueItems = [
-    {
-      id: 'CN-1969-001',
-      model: '1969 Dodge Charger R/T',
-      year: '1969',
-      owner: 'Arjun Mehta',
-      registration: 'WB XX XXXX',
-      type: 'Vehicle + Documents',
-      submitted: 'Today',
-      risk: 'Low',
-      trustScore: 92,
-      status: 'Pending',
-      image: '/cars/shelby_gt500.png',
-      vin: '1FA6P8SJ4L5502910'
-    },
-    {
-      id: 'CN-2023-082',
-      model: 'BMW 3 Series',
-      year: '2023',
-      owner: 'Rahul Sharma',
-      registration: 'DL 01 AB 9821',
-      type: 'Documents',
-      submitted: 'Today',
-      risk: 'Medium',
-      trustScore: 84,
-      status: 'Under Review',
-      image: '/cars/audi_r8_camry.png',
-      vin: 'WBA33AY090FP19283'
-    },
-    {
-      id: 'CN-2024-114',
-      model: 'Hyundai Creta',
-      year: '2024',
-      owner: 'Priya Das',
-      registration: 'MH 12 PQ 4410',
-      type: 'Vehicle + Documents',
-      submitted: 'Yesterday',
-      risk: 'Low',
-      trustScore: 96,
-      status: 'Pending',
-      image: '/cars/audi_tt.png',
-      vin: 'KMHD841ECFU019284'
-    },
-    {
-      id: 'CN-2023-509',
-      model: 'Toyota Fortuner',
-      year: '2023',
-      owner: 'Amit Roy',
-      registration: 'KA 05 MN 7712',
-      type: 'Ownership',
-      submitted: 'Yesterday',
-      risk: 'High',
-      trustScore: 78,
-      status: 'Flagged',
-      image: '/cars/rs_line.png',
-      vin: 'MHFJ115G009124810'
-    }
-  ];
-
-  // Selected item for Verification Detail page/modal
-  const [selectedItem, setSelectedItem] = useState(queueItems[0]);
-  const [isReviewing, setIsReviewing] = useState(false);
-
-  // Approval Modal State
-  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [queue, setQueue] = useState(MOCK_AUTHORITY_DATA.verificationQueue);
+  const [selectedQueueItem, setSelectedQueueItem] = useState(MOCK_AUTHORITY_DATA.verificationQueue[0]);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [confirmedCheck, setConfirmedCheck] = useState(false);
-  const [approvalSuccess, setApprovalSuccess] = useState(false);
-
-  // Filters State
-  const [queueSearch, setQueueSearch] = useState('');
-  const [queueFilter, setQueueFilter] = useState('All');
-
-  // Registry Filters
+  const [decisionSuccess, setDecisionSuccess] = useState(null);
   const [registrySearch, setRegistrySearch] = useState('');
-  const [registryFilter, setRegistryFilter] = useState('All');
-
-  // Transfer Detail state
-  const [selectedTransfer, setSelectedTransfer] = useState(null);
-
-  const filteredQueue = queueItems.filter((item) => {
-    const matchesSearch =
-      item.model.toLowerCase().includes(queueSearch.toLowerCase()) ||
-      item.owner.toLowerCase().includes(queueSearch.toLowerCase()) ||
-      item.id.toLowerCase().includes(queueSearch.toLowerCase());
-    
-    if (queueFilter === 'All') return matchesSearch;
-    return matchesSearch && item.status.toLowerCase() === queueFilter.toLowerCase();
-  });
+  const [registryFilter, setRegistryFilter] = useState('all');
 
   const handleOpenReview = (item) => {
-    setSelectedItem(item);
-    setIsReviewing(true);
+    setSelectedQueueItem(item);
+    setConfirmedCheck(false);
+    setDecisionSuccess(null);
+    setReviewModalOpen(true);
   };
 
-  const handleConfirmApprovalSubmit = () => {
-    if (!confirmedCheck) return;
-    setApprovalSuccess(true);
+  const handleDecision = (type) => {
+    if (type === 'approve' && !confirmedCheck) {
+      alert("Please confirm the verification checkbox before approving.");
+      return;
+    }
+
+    setDecisionSuccess(type);
+    setQueue((prev) =>
+      prev.map((q) => (q.id === selectedQueueItem.id ? { ...q, status: type === 'approve' ? 'Verified' : type === 'reject' ? 'Rejected' : 'Under Review' } : q))
+    );
+
     setTimeout(() => {
-      setShowApprovalModal(false);
-      setApprovalSuccess(false);
-      setConfirmedCheck(false);
-      setIsReviewing(false);
-    }, 1500);
+      setDecisionSuccess(null);
+      setReviewModalOpen(false);
+    }, 1200);
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn text-[#171C1C]">
+    <div className="space-y-8 animate-fadeIn">
 
-      {/* ──────────────────────────────────────────────────────────
-          MAIN DASHBOARD OVERVIEW (activeTab === 'dashboard')
-      ────────────────────────────────────────────────────────── */}
-      {activeTab === 'dashboard' && !isReviewing && (
+      {/* ==========================================================
+          1. AUTHORITY DASHBOARD HOME
+      ========================================================== */}
+      {activeTab === 'dashboard' && (
         <>
-          {/* HEADER CONTROL CENTER BANNER */}
-          <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          {/* Header Banner */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#159A9C]">
-                AUTHORITY CONTROL CENTER
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-mono font-semibold border border-emerald-200">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>OFFICIAL RTO / DMV ORACLE NODE #409</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-[#171C1C] tracking-tight leading-tight">
-                Vehicle verification &<br className="hidden sm:inline" /> ownership management.
+              <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
+                Authority Dashboard
               </h1>
-              <p className="text-sm text-[#687272] leading-relaxed">
-                “Review vehicle records, verify submitted documents, approve registrations, and manage digital ownership transfers.”
+              <h2 className="text-base font-heading font-bold text-emerald-900">
+                Vehicle verification & ownership management
+              </h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Review submitted physical title deeds, validate telemetry from certified inspection stations, and sign RWA ownership transitions on Ethereum Sepolia.
               </p>
             </div>
 
-            <div className="flex items-center space-x-2 bg-[#159A9C]/10 border border-[#159A9C]/20 text-[#159A9C] px-3.5 py-2 rounded-full font-mono text-xs font-bold shrink-0">
-              <CheckCircle2 className="w-4 h-4 text-[#159A9C]" />
-              <span>✓ AUTHORITY VERIFIED</span>
-            </div>
-          </div>
-
-          {/* OVERVIEW CARDS (EXACTLY FOUR COMPACT CARDS) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* CARD 1 */}
-            <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex items-center justify-between">
-              <div className="space-y-1">
-                <span className="text-xs font-mono font-bold text-[#687272] block">Pending Verification</span>
-                <div className="text-3xl font-heading font-extrabold text-[#171C1C]">24</div>
-                <span className="text-[11px] text-[#687272] block">Vehicles awaiting verification</span>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-[#159A9C]/10 text-[#159A9C] flex items-center justify-center shrink-0">
-                <FileCheck className="w-6 h-6" />
-              </div>
-            </div>
-
-            {/* CARD 2 */}
-            <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex items-center justify-between">
-              <div className="space-y-1">
-                <span className="text-xs font-mono font-bold text-[#687272] block">Approved Today</span>
-                <div className="text-3xl font-heading font-extrabold text-[#159A9C]">18</div>
-                <span className="text-[11px] text-[#687272] block">Successfully verified vehicles</span>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#159A9C] flex items-center justify-center shrink-0">
-                <CheckCircle2 className="w-6 h-6" />
-              </div>
-            </div>
-
-            {/* CARD 3 */}
-            <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex items-center justify-between">
-              <div className="space-y-1">
-                <span className="text-xs font-mono font-bold text-[#687272] block">Transfer Requests</span>
-                <div className="text-3xl font-heading font-extrabold text-[#123B3D]">07</div>
-                <span className="text-[11px] text-[#687272] block">Ownership transfers requiring review</span>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#123B3D] flex items-center justify-center shrink-0">
-                <RefreshCw className="w-6 h-6" />
-              </div>
-            </div>
-
-            {/* CARD 4 */}
-            <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex items-center justify-between">
-              <div className="space-y-1">
-                <span className="text-xs font-mono font-bold text-[#687272] block">Risk Alerts</span>
-                <div className="text-3xl font-heading font-extrabold text-amber-600">03</div>
-                <span className="text-[11px] text-[#687272] block">Records requiring attention</span>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-            </div>
-          </div>
-
-          {/* VERIFICATION QUEUE SECTION */}
-          <div className="bg-white rounded-[18px] border border-[#E2E7E7] shadow-xs p-6 sm:p-8 space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2E7E7] pb-4">
-              <div>
-                <h2 className="text-lg font-heading font-extrabold text-[#171C1C]">Verification Queue</h2>
-                <p className="text-xs text-[#687272] mt-0.5">“Review and process recently submitted vehicle records.”</p>
-              </div>
-
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
               <button
-                onClick={() => onNavigateTab && onNavigateTab('queue')}
-                className="text-xs font-mono font-bold text-[#159A9C] hover:underline flex items-center space-x-1 cursor-pointer"
+                onClick={() => onSelectTab('queue')}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 hover:bg-emerald-800 text-white font-semibold text-xs uppercase tracking-wider transition-all duration-200 shadow-xs flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>View All 24</span>
+                <span>Process Queue (24)</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+          </div>
 
-            {/* SEARCH & FILTER ROW */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="relative w-full sm:w-80">
-                <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  value={queueSearch}
-                  onChange={(e) => setQueueSearch(e.target.value)}
-                  placeholder="Search Vehicle ID, Registration or Owner"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E2E7E7] text-xs focus:outline-none focus:border-[#159A9C]"
-                />
-              </div>
-
-              <div className="flex items-center space-x-1 bg-[#F5F7F7] p-1 rounded-xl border border-[#E2E7E7] text-xs font-mono">
-                {['All', 'Pending', 'Under Review', 'Verified', 'Flagged'].map((flt) => (
-                  <button
-                    key={flt}
-                    onClick={() => setQueueFilter(flt)}
-                    className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                      queueFilter === flt
-                        ? 'bg-white text-[#171C1C] font-bold shadow-xs'
-                        : 'text-[#687272] hover:text-[#171C1C]'
-                    }`}
-                  >
-                    {flt}
-                  </button>
-                ))}
-              </div>
+          {/* ==========================================================
+              AUTHORITY SUMMARY — EXACTLY FOUR COMPACT CARDS
+          ========================================================== */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
+                Authority Operational Metrics
+              </h3>
+              <span className="text-xs font-mono text-emerald-700 font-bold">Node MH02 Active</span>
             </div>
 
-            {/* QUEUE TABLE */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs font-sans">
-                <thead>
-                  <tr className="border-b border-[#E2E7E7] text-[#687272] font-mono uppercase text-[11px]">
-                    <th className="pb-3 font-semibold">Vehicle</th>
-                    <th className="pb-3 font-semibold">Owner</th>
-                    <th className="pb-3 font-semibold">Verification</th>
-                    <th className="pb-3 font-semibold">Submitted</th>
-                    <th className="pb-3 font-semibold">Risk</th>
-                    <th className="pb-3 font-semibold">Status</th>
-                    <th className="pb-3 font-semibold text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E2E7E7]/60">
-                  {filteredQueue.map((item) => {
-                    let statusColor = 'bg-amber-50 text-amber-800 border-amber-200';
-                    if (item.status === 'Under Review') statusColor = 'bg-teal-50 text-[#159A9C] border-[#159A9C]/30';
-                    if (item.status === 'Verified') statusColor = 'bg-emerald-50 text-emerald-800 border-emerald-200';
-                    if (item.status === 'Flagged') statusColor = 'bg-rose-50 text-rose-800 border-rose-200';
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Card 1 */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-semibold text-slate-500 block">Pending Verifications</span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-3xl font-heading font-extrabold text-slate-900">
+                    {MOCK_AUTHORITY_DATA.stats.pendingVerifications}
+                  </span>
+                  <button onClick={() => onSelectTab('queue')} className="text-xs text-teal-700 hover:underline font-semibold cursor-pointer">
+                    Review
+                  </button>
+                </div>
+              </div>
 
-                    return (
-                      <tr key={item.id} className="hover:bg-[#F5F7F7]/60 transition-colors">
-                        <td className="py-4 font-bold font-heading text-[#171C1C]">
-                          <div className="text-sm">{item.model}</div>
-                          <span className="text-[10px] font-mono text-[#687272] font-normal">{item.id}</span>
-                        </td>
-                        <td className="py-4 font-semibold text-[#171C1C]">{item.owner}</td>
-                        <td className="py-4 font-mono text-[#687272]">{item.type}</td>
-                        <td className="py-4 font-mono text-[#687272]">{item.submitted}</td>
-                        <td className="py-4 font-mono font-bold">
-                          <span className={`px-2 py-0.5 rounded text-[10px] ${
-                            item.risk === 'Low' ? 'bg-emerald-50 text-emerald-800' : item.risk === 'Medium' ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-800'
-                          }`}>
-                            {item.risk}
-                          </span>
-                        </td>
-                        <td className="py-4 font-mono font-bold">
-                          <span className={`px-2.5 py-1 rounded-full border text-[10px] uppercase ${statusColor}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="py-4 text-right">
-                          <button
-                            onClick={() => handleOpenReview(item)}
-                            className="px-4 py-2 rounded-xl bg-[#171C1C] hover:bg-[#159A9C] text-white font-bold text-xs transition-colors cursor-pointer inline-flex items-center space-x-1"
-                          >
-                            <span>Review</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+              {/* Card 2 */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-semibold text-slate-500 block">Approved Today</span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-3xl font-heading font-extrabold text-slate-900">
+                    {MOCK_AUTHORITY_DATA.stats.approvedToday}
+                  </span>
+                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
+                    +6 in last hour
+                  </span>
+                </div>
+              </div>
+
+              {/* Card 3 */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-semibold text-slate-500 block">Transfer Requests</span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-3xl font-heading font-extrabold text-slate-900">
+                    {MOCK_AUTHORITY_DATA.stats.transferRequests}
+                  </span>
+                  <button onClick={() => onSelectTab('transfers')} className="text-xs text-teal-700 hover:underline font-semibold cursor-pointer">
+                    Inspect
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 4 */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
+                <span className="text-xs font-semibold text-slate-500 block">Risk Alerts</span>
+                <div className="mt-2 flex items-baseline justify-between">
+                  <span className="text-3xl font-heading font-extrabold text-rose-600">
+                    {MOCK_AUTHORITY_DATA.stats.riskAlerts}
+                  </span>
+                  <button onClick={() => onSelectTab('risk-alerts')} className="text-[11px] font-mono text-rose-700 bg-rose-50 px-2 py-0.5 rounded font-bold">
+                    Needs Action
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Queue Snapshot on Home */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div>
+                <h3 className="text-base font-heading font-bold text-slate-900">
+                  Priority Verification Queue
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Recent document submissions awaiting official RTO verification.
+                </p>
+              </div>
+              <button
+                onClick={() => onSelectTab('queue')}
+                className="text-xs font-bold text-teal-700 hover:underline cursor-pointer"
+              >
+                View Full Queue →
+              </button>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {queue.slice(0, 3).map((item) => (
+                <div key={item.id} className="py-3.5 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
+                    <span className="text-[11px] text-slate-500 font-mono">Owner: {item.ownerName} • VIN: {item.vin}</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="px-2 py-0.5 rounded bg-slate-100 font-mono text-[10px] font-bold uppercase text-slate-700">
+                      {item.status}
+                    </span>
+                    <button
+                      onClick={() => handleOpenReview(item)}
+                      className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-emerald-800 text-white font-semibold cursor-pointer"
+                    >
+                      Review
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </>
       )}
 
-      {/* ──────────────────────────────────────────────────────────
-          VEHICLE VERIFICATION DETAIL SCREEN (isReviewing || activeTab === 'queue')
-      ────────────────────────────────────────────────────────── */}
-      {(isReviewing || activeTab === 'queue' || activeTab === 'doc-review') && (
+      {/* ==========================================================
+          2. VERIFICATION QUEUE (PRIMARY AUTHORITY FEATURE)
+      ========================================================== */}
+      {activeTab === 'queue' && (
         <div className="space-y-6">
-          {/* HEADER & BACK BUTTON */}
-          <div className="flex items-center justify-between">
-            <button
-              onClick={() => setIsReviewing(false)}
-              className="px-4 py-2 rounded-xl bg-white border border-[#E2E7E7] text-xs font-mono font-bold text-[#171C1C] hover:bg-[#F5F7F7] flex items-center space-x-2 transition-colors cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>← Back to Verification Queue</span>
-            </button>
-
-            <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 uppercase">
-              STATUS: {selectedItem.status.toUpperCase()}
-            </span>
-          </div>
-
-          <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-mono text-[#687272] block">Vehicle Verification Request: #{selectedItem.id}</span>
-              <h1 className="text-2xl font-heading font-extrabold text-[#171C1C] mt-0.5">{selectedItem.model}</h1>
-            </div>
-
-            <button
-              onClick={() => onOpenPassport && onOpenPassport(selectedItem)}
-              className="px-4 py-2 rounded-xl bg-[#159A9C]/10 text-[#159A9C] border border-[#159A9C]/30 text-xs font-mono font-bold hover:bg-[#159A9C]/20 transition-colors flex items-center space-x-1.5 cursor-pointer"
-            >
-              <FileText className="w-4 h-4" />
-              <span>Digital Vehicle Passport →</span>
-            </button>
-          </div>
-
-          {/* VEHICLE INFORMATION CARD */}
-          <div className="bg-white rounded-[18px] border border-[#E2E7E7] p-6 shadow-xs">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* LEFT: Premium Car Image */}
-              <div className="lg:col-span-5 rounded-2xl overflow-hidden bg-[#F5F7F7] aspect-[16/10] border border-[#E2E7E7]">
-                <img
-                  src={selectedItem.image}
-                  alt={selectedItem.model}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-
-              {/* RIGHT: Vehicle Details Table */}
-              <div className="lg:col-span-7 space-y-4">
-                <h3 className="text-base font-heading font-extrabold text-[#171C1C]">Vehicle Information</h3>
-
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">VEHICLE ID</span>
-                    <strong className="text-[#171C1C]">{selectedItem.id}</strong>
-                  </div>
-
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">REGISTRATION NUMBER</span>
-                    <strong className="text-[#171C1C]">{selectedItem.registration}</strong>
-                  </div>
-
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">MAKE & MODEL</span>
-                    <strong className="text-[#171C1C] truncate block">{selectedItem.model}</strong>
-                  </div>
-
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">YEAR</span>
-                    <strong className="text-[#171C1C]">{selectedItem.year}</strong>
-                  </div>
-
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">CURRENT OWNER</span>
-                    <strong className="text-[#171C1C] truncate block">{selectedItem.owner}</strong>
-                  </div>
-
-                  <div className="p-3 bg-[#F5F7F7] rounded-xl border border-[#E2E7E7]">
-                    <span className="text-[10px] text-[#687272] block font-bold">STATUS</span>
-                    <strong className="text-[#159A9C]">{selectedItem.status}</strong>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* VERIFICATION CHECKLIST & DOCUMENT REVIEW */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-            {/* VERIFICATION CHECKLIST (LEFT 6 COLS) */}
-            <div className="lg:col-span-6 bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-4">
-              <h3 className="text-base font-heading font-extrabold text-[#171C1C]">Verification Checklist</h3>
-
-              <div className="space-y-2.5 text-xs font-mono">
-                {[
-                  { name: 'Vehicle Identity', status: '✓ Matched', state: 'success' },
-                  { name: 'Registration Document', status: '✓ Verified', state: 'success' },
-                  { name: 'Ownership Proof', status: '✓ Verified', state: 'success' },
-                  { name: 'Insurance', status: '✓ Verified', state: 'success' },
-                  { name: 'Inspection Record', status: '✓ Verified', state: 'success' },
-                  { name: 'Finance Status', status: '○ Pending', state: 'pending' },
-                ].map((item, i) => (
-                  <div key={i} className="p-3.5 rounded-xl bg-[#F5F7F7] border border-[#E2E7E7] flex items-center justify-between">
-                    <span className="font-bold text-[#171C1C]">{item.name}</span>
-                    <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold ${
-                      item.state === 'success' ? 'bg-emerald-50 text-[#159A9C] border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* DOCUMENT REVIEW CARDS (RIGHT 6 COLS) */}
-            <div className="lg:col-span-6 bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-4">
-              <div>
-                <h3 className="text-base font-heading font-extrabold text-[#171C1C]">Submitted Documents</h3>
-                <p className="text-xs text-[#687272] mt-0.5">“Review the documents submitted for vehicle verification.”</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                {[
-                  { name: 'Registration Certificate', status: '✓ Verified' },
-                  { name: 'Insurance Document', status: '✓ Verified' },
-                  { name: 'Ownership Proof', status: '✓ Verified' },
-                  { name: 'Inspection Report', status: '✓ Verified' },
-                ].map((doc, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-[#F5F7F7] border border-[#E2E7E7] flex flex-col justify-between space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="w-4 h-4 text-[#159A9C]" />
-                      <span className="font-bold text-[#171C1C] truncate">{doc.name}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] font-mono">
-                      <span className="text-[#159A9C] font-bold">{doc.status}</span>
-                      <button onClick={() => alert(`Opening ${doc.name}`)} className="text-[#159A9C] hover:underline font-bold">
-                        View Document →
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* RISK ASSESSMENT (2-COLUMN SECTION) */}
-          <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-6">
-            <h3 className="text-base font-heading font-extrabold text-[#171C1C]">Vehicle Risk Assessment</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
-              {/* LEFT */}
-              <div className="md:col-span-5 p-6 rounded-2xl bg-[#F5F7F7] border border-[#E2E7E7] space-y-3">
-                <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full uppercase">
-                  LOW RISK
-                </span>
-                <div className="text-3xl font-heading font-extrabold text-[#171C1C] pt-1">
-                  Trust Score: 92 / 100
-                </div>
-                <p className="text-xs text-[#687272] leading-relaxed">
-                  “No major inconsistencies detected in the submitted vehicle record.”
-                </p>
-              </div>
-
-              {/* RIGHT: Signals Progress bars */}
-              <div className="md:col-span-7 space-y-3.5 text-xs font-mono">
-                {[
-                  { name: 'Document Consistency', pct: '92%' },
-                  { name: 'Ownership Consistency', pct: '100%' },
-                  { name: 'Vehicle History', pct: '88%' },
-                  { name: 'Insurance Status', pct: '100%' },
-                  { name: 'Finance Status', pct: 'Pending' },
-                ].map((sig, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between font-bold text-[#171C1C]">
-                      <span>{sig.name}</span>
-                      <span className="text-[#159A9C]">{sig.pct}</span>
-                    </div>
-                    <div className="w-full bg-[#E2E7E7] h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-[#159A9C] h-full rounded-full"
-                        style={{ width: sig.pct.includes('%') ? sig.pct : '50%' }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* AUTHORITY DECISION SECTION */}
-          <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-5">
-            <div>
-              <h3 className="text-lg font-heading font-extrabold text-[#171C1C]">Verification Decision</h3>
-              <p className="text-xs text-[#687272] mt-0.5">
-                “Review the submitted vehicle information before approving this vehicle for the carNodes verified registry.”
+              <h2 className="text-xl font-heading font-extrabold text-slate-900">
+                Official Vehicle Verification Queue ({queue.length})
+              </h2>
+              <p className="text-xs text-slate-500">
+                Audit title deeds, chassis numbers, insurance validity, and hypothecation freedom before on-chain passport issuance.
               </p>
             </div>
+          </div>
 
-            <div className="flex items-center space-x-2 pt-2">
-              <input
-                type="checkbox"
-                id="review-confirm"
-                checked={confirmedCheck}
-                onChange={(e) => setConfirmedCheck(e.target.checked)}
-                className="w-4 h-4 rounded border-[#E2E7E7] text-[#159A9C] focus:ring-[#159A9C]"
-              />
-              <label htmlFor="review-confirm" className="text-xs font-mono text-[#171C1C] cursor-pointer">
-                I confirm that the submitted vehicle information has been reviewed.
-              </label>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <button
-                onClick={() => setShowApprovalModal(true)}
-                disabled={!confirmedCheck}
-                className="px-6 py-3 rounded-xl bg-[#159A9C] hover:bg-[#123B3D] text-white font-bold text-xs uppercase tracking-wider transition-colors disabled:opacity-40 cursor-pointer"
-              >
-                Approve Vehicle
-              </button>
-
-              <button
-                onClick={() => alert('Correction request sent to applicant')}
-                className="px-6 py-3 rounded-xl bg-white border border-[#E2E7E7] text-[#171C1C] hover:bg-[#F5F7F7] font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                Request Correction
-              </button>
-
-              <button
-                onClick={() => alert('Vehicle verification rejected')}
-                className="px-6 py-3 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer"
-              >
-                Reject
-              </button>
+          {/* Queue Table */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px] tracking-wider">
+                  <tr>
+                    <th className="py-4 px-6">Vehicle</th>
+                    <th className="py-4 px-4">Owner / Entity</th>
+                    <th className="py-4 px-4">Verification Type</th>
+                    <th className="py-4 px-4">Submitted</th>
+                    <th className="py-4 px-4">Risk</th>
+                    <th className="py-4 px-4">Status</th>
+                    <th className="py-4 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {queue.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                      <td className="py-4 px-6">
+                        <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">Reg: {item.registrationNo} • {item.vin}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="font-semibold text-slate-800 block">{item.ownerName}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{item.ownerType}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-slate-700 font-medium">{item.verificationType}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className="text-slate-500 font-mono">{item.submittedDate}</span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
+                          item.risk === 'LOW' ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                        }`}>
+                          {item.risk} (Score {item.riskScore})
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                          item.status === 'Verified'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            : item.status === 'Rejected'
+                            ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                            : item.status === 'Under Review'
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                            : 'bg-slate-100 text-slate-700'
+                        }`}>
+                          <span>{item.status}</span>
+                        </span>
+                      </td>
+                      <td className="py-4 px-6 text-right">
+                        <button
+                          onClick={() => handleOpenReview(item)}
+                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
+                        >
+                          Review
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       )}
 
-      {/* ──────────────────────────────────────────────────────────
-          TAB 3: VERIFIED VEHICLE REGISTRY PAGE
-      ────────────────────────────────────────────────────────── */}
+      {/* ==========================================================
+          VEHICLE VERIFICATION SCREEN MODAL (REVIEW WORKFLOW)
+      ========================================================== */}
+      {reviewModalOpen && selectedQueueItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+          <div className="bg-[#FDFBF7] w-full max-w-4xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto">
+            
+            {/* Header */}
+            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+              <div>
+                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block">Official Verification Dossier</span>
+                <h3 className="text-base font-heading font-extrabold text-white">
+                  Audit: {selectedQueueItem.vehicleName}
+                </h3>
+              </div>
+              <button
+                onClick={() => setReviewModalOpen(false)}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content Split */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FDFBF7]">
+              {decisionSuccess && (
+                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <span>Authority Decision Recorded: {decisionSuccess.toUpperCase()} on Ethereum Sepolia!</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                {/* LEFT (5 cols): Vehicle Identity */}
+                <div className="md:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs">
+                  <div className="h-32 bg-slate-50 rounded-xl border border-slate-100 p-2 flex items-center justify-center">
+                    <img src="/cars/audi_r8_camry.png" alt="Vehicle" className="max-h-full object-contain" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-heading font-bold text-slate-900 text-sm">{selectedQueueItem.vehicleName}</h4>
+                    <div className="p-2.5 rounded-lg bg-slate-50 font-mono space-y-1 text-[11px]">
+                      <div>VIN: <strong className="text-slate-900">{selectedQueueItem.vin}</strong></div>
+                      <div>Registration: <strong className="text-slate-900">{selectedQueueItem.registrationNo}</strong></div>
+                      <div>Current Owner: <strong className="text-slate-900">{selectedQueueItem.ownerName}</strong></div>
+                    </div>
+                  </div>
+
+                  {/* Document Preview Snippet */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
+                      Submitted Title Document Preview
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <FileText className="w-4 h-4 text-teal-600" />
+                      <span className="font-semibold text-slate-700 text-xs">Form_23_RC_Book_Scan.pdf</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* RIGHT (7 cols): Verification Checklist & Risk Assessment */}
+                <div className="md:col-span-7 space-y-4">
+                  {/* Checklist */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                    <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
+                      Authority Multi-Checklist
+                    </h4>
+
+                    <div className="space-y-2 text-xs">
+                      {[
+                        { label: 'Identity & Seller Match', status: selectedQueueItem.checklist.identityMatch },
+                        { label: 'Registration Document (RC) Validity', status: selectedQueueItem.checklist.registrationDoc },
+                        { label: 'Ownership Chain & Transfer Right', status: selectedQueueItem.checklist.ownershipProof },
+                        { label: 'Insurance Policy Sync (IIB Oracle)', status: selectedQueueItem.checklist.insurance },
+                        { label: 'Physical Inspection & Telemetry Scan', status: selectedQueueItem.checklist.inspection },
+                        { label: 'Hypothecation / Bank Finance Status', status: selectedQueueItem.checklist.financeStatus }
+                      ].map((chk, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="font-medium text-slate-700">{chk.label}</span>
+                          <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
+                            chk.status === 'verified'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                              : chk.status === 'mismatch'
+                              ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                              : 'bg-amber-50 text-amber-800 border border-amber-200'
+                          }`}>
+                            {chk.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Compact Risk Panel */}
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-900 font-heading">Vehicle Risk Assessment</span>
+                      <span className="text-xs font-mono font-bold text-emerald-700">Trust Score {selectedQueueItem.riskScore}/100</span>
+                    </div>
+
+                    <div className="space-y-1.5 text-[11px] text-slate-500">
+                      <div className="flex justify-between">
+                        <span>Document Consistency</span>
+                        <strong className="text-slate-800">98% Match</strong>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-[98%] h-full bg-emerald-500 rounded-full" />
+                      </div>
+
+                      <div className="flex justify-between pt-1">
+                        <span>Ownership Consistency</span>
+                        <strong className="text-slate-800">100% Match</strong>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="w-[100%] h-full bg-emerald-500 rounded-full" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Authority Decision Panel */}
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-start space-x-2">
+                  <input
+                    type="checkbox"
+                    id="confirmReview"
+                    checked={confirmedCheck}
+                    onChange={(e) => setConfirmedCheck(e.target.checked)}
+                    className="mt-1 rounded text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <label htmlFor="confirmReview" className="text-xs text-slate-700 font-medium cursor-pointer">
+                    “Confirm vehicle and document information has been reviewed against regional VAHAN / RTO registries.”
+                  </label>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                  <span className="text-[11px] font-mono text-slate-400">
+                    Decision will be recorded to Sepolia Oracle
+                  </span>
+
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => handleDecision('reject')}
+                      className="px-4 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold cursor-pointer"
+                    >
+                      Reject
+                    </button>
+                    <button
+                      onClick={() => handleDecision('correction')}
+                      className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold cursor-pointer"
+                    >
+                      Request Correction
+                    </button>
+                    <button
+                      onClick={() => handleDecision('approve')}
+                      className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Approve Vehicle</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ==========================================================
+          3. VEHICLE REGISTRY VIEW
+      ========================================================== */}
       {activeTab === 'registry' && (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-heading font-extrabold uppercase text-[#171C1C] tracking-tight">
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+            <h2 className="text-xl font-heading font-extrabold text-slate-900">
               Verified Vehicle Registry
-            </h1>
-            <p className="text-xs font-mono text-[#687272]">“A transparent registry of verified vehicles on carNodes.”</p>
-          </div>
-
-          {/* Registry Search & Filter */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-[18px] border border-[#E2E7E7] shadow-xs">
-            <div className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
-              <input
-                type="text"
-                value={registrySearch}
-                onChange={(e) => setRegistrySearch(e.target.value)}
-                placeholder="Search Vehicle ID or Registration Number"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E2E7E7] text-xs focus:outline-none focus:border-[#159A9C]"
-              />
-            </div>
-
-            <div className="flex items-center space-x-1 bg-[#F5F7F7] p-1 rounded-xl border border-[#E2E7E7] text-xs font-mono">
-              {['All Vehicles', 'Verified', 'Pending', 'Rejected'].map((flt) => (
-                <button
-                  key={flt}
-                  onClick={() => setRegistryFilter(flt)}
-                  className={`px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    registryFilter === flt ? 'bg-white text-[#171C1C] font-bold shadow-xs' : 'text-[#687272]'
-                  }`}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div className="sm:col-span-8 relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                <input
+                  type="text"
+                  value={registrySearch}
+                  onChange={(e) => setRegistrySearch(e.target.value)}
+                  placeholder="Search by Vehicle ID, Registration Plate, or Owner..."
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-teal-600 focus:bg-white font-mono"
+                />
+              </div>
+              <div className="sm:col-span-4">
+                <select
+                  value={registryFilter}
+                  onChange={(e) => setRegistryFilter(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold cursor-pointer"
                 >
-                  {flt}
-                </button>
-              ))}
+                  <option value="all">All Statuses</option>
+                  <option value="verified">Verified Only</option>
+                  <option value="pending">Pending Approval</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-[18px] border border-[#E2E7E7] p-6 shadow-xs overflow-x-auto">
-            <table className="w-full text-left text-xs font-sans">
-              <thead>
-                <tr className="border-b border-[#E2E7E7] text-[#687272] font-mono uppercase text-[11px]">
-                  <th className="pb-3 font-semibold">Vehicle</th>
-                  <th className="pb-3 font-semibold">Owner</th>
-                  <th className="pb-3 font-semibold">Registration</th>
-                  <th className="pb-3 font-semibold">Documents</th>
-                  <th className="pb-3 font-semibold">Blockchain Record</th>
-                  <th className="pb-3 font-semibold">Status</th>
-                  <th className="pb-3 font-semibold text-right">Action</th>
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px]">
+                <tr>
+                  <th className="py-4 px-6">Vehicle Asset</th>
+                  <th className="py-4 px-4">Registration</th>
+                  <th className="py-4 px-4">Current Owner</th>
+                  <th className="py-4 px-4">Blockchain Record</th>
+                  <th className="py-4 px-6 text-right">Passport</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E2E7E7]/60">
-                {[
-                  { model: '1969 Dodge Charger R/T', owner: 'Arjun Mehta', reg: 'Verified', docs: '5 / 5 Verified', network: 'Ethereum Sepolia', status: '✓ Verified' },
-                  { model: 'BMW 3 Series', owner: 'Rahul Sharma', reg: 'Verified', docs: '4 / 4 Verified', network: 'Ethereum Sepolia', status: '✓ Verified' },
-                  { model: 'Hyundai Creta', owner: 'Priya Das', reg: 'Verified', docs: '5 / 5 Verified', network: 'Ethereum Sepolia', status: '✓ Verified' },
-                  { model: 'Toyota Fortuner', owner: 'Amit Roy', reg: 'Verified', docs: '3 / 5 Verified', network: 'Ethereum Sepolia', status: '✓ Verified' },
-                ].map((item, idx) => (
-                  <tr key={idx} className="hover:bg-[#F5F7F7]/60 transition-colors">
-                    <td className="py-4 font-bold font-heading text-[#171C1C]">{item.model}</td>
-                    <td className="py-4 font-semibold text-[#171C1C]">{item.owner}</td>
-                    <td className="py-4 font-mono text-[#159A9C] font-bold">{item.reg}</td>
-                    <td className="py-4 font-mono text-[#687272]">{item.docs}</td>
-                    <td className="py-4 font-mono text-[#123B3D] font-bold">{item.network}</td>
-                    <td className="py-4 font-mono font-bold text-[#159A9C]">{item.status}</td>
-                    <td className="py-4 text-right">
+              <tbody className="divide-y divide-slate-100">
+                {VEHICLES.map((v) => (
+                  <tr key={v.id} className="hover:bg-slate-50/70">
+                    <td className="py-4 px-6 font-bold text-slate-900">{v.model}</td>
+                    <td className="py-4 px-4 font-mono text-slate-700">{v.id}</td>
+                    <td className="py-4 px-4 text-slate-700">Vikram Singhania</td>
+                    <td className="py-4 px-4 font-mono text-teal-700">Sepolia: 0x89a...4f92</td>
+                    <td className="py-4 px-6 text-right">
                       <button
-                        onClick={() => onOpenPassport && onOpenPassport(safeVehicles[0])}
-                        className="px-3 py-1.5 rounded-xl bg-[#171C1C] hover:bg-[#159A9C] text-white font-bold text-xs font-mono cursor-pointer"
+                        onClick={() => onOpenPassport(v)}
+                        className="px-3 py-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 font-semibold cursor-pointer"
                       >
-                        View Record →
+                        Inspect
                       </button>
                     </td>
                   </tr>
@@ -651,213 +536,60 @@ export default function AuthorityDashboardView({
         </div>
       )}
 
-      {/* ──────────────────────────────────────────────────────────
-          TAB 4: OWNERSHIP TRANSFER REQUESTS PAGE & DETAIL
-      ────────────────────────────────────────────────────────── */}
-      {(activeTab === 'transfers' || activeTab === 'records') && (
+      {/* ==========================================================
+          4. OWNERSHIP TRANSFERS & AUDIT TRAIL
+      ========================================================== */}
+      {(activeTab === 'transfers' || activeTab === 'pending-approvals') && (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-heading font-extrabold uppercase text-[#171C1C] tracking-tight">
-              Ownership Transfer Requests
-            </h1>
-            <p className="text-xs font-mono text-[#687272]">“Review and approve vehicle ownership transfers.”</p>
-          </div>
-
-          {/* TRANSFER CARDS */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-[#E2E7E7] pb-3">
-                <h3 className="text-base font-heading font-extrabold text-[#171C1C]">1969 Dodge Charger R/T</h3>
-                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                  Pending Approval
-                </span>
-              </div>
-
-              {/* Transfer Flow */}
-              <div className="flex items-center justify-between text-xs font-mono bg-[#F5F7F7] p-3 rounded-xl border border-[#E2E7E7]">
-                <div>
-                  <span className="text-[10px] text-[#687272] block">Current Owner</span>
-                  <strong className="text-[#171C1C]">Arjun Mehta</strong>
-                </div>
-                <ArrowRight className="w-4 h-4 text-[#159A9C]" />
-                <div>
-                  <span className="text-[10px] text-[#687272] block">New Owner</span>
-                  <strong className="text-[#171C1C]">Rahul Sharma</strong>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-[11px] font-mono">
-                <div className="p-2 bg-emerald-50 text-[#159A9C] rounded-lg border border-emerald-200">
-                  ✓ Vehicle Complete
-                </div>
-                <div className="p-2 bg-emerald-50 text-[#159A9C] rounded-lg border border-emerald-200">
-                  ✓ Docs Complete
-                </div>
-                <div className="p-2 bg-emerald-50 text-[#159A9C] rounded-lg border border-emerald-200">
-                  ✓ Tx Secured
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
-                <button
-                  onClick={() => setSelectedTransfer(queueItems[0])}
-                  className="px-5 py-2.5 rounded-xl bg-[#171C1C] hover:bg-[#159A9C] text-white font-bold text-xs uppercase transition-colors cursor-pointer"
-                >
-                  Review Transfer →
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* TRANSFER DETAIL STEP FLOW */}
-          {selectedTransfer && (
-            <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-6">
-              <div className="flex items-center justify-between border-b border-[#E2E7E7] pb-3">
-                <h3 className="text-lg font-heading font-extrabold text-[#171C1C]">
-                  Ownership Transfer: {selectedTransfer.model}
-                </h3>
-                <button onClick={() => setSelectedTransfer(null)} className="text-xs text-[#687272] hover:underline">
-                  Close Detail
-                </button>
-              </div>
-
-              {/* HORIZONTAL STEP FLOW */}
-              <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-center text-xs font-mono">
-                {[
-                  { title: 'CURRENT OWNER', detail: 'Arjun Mehta' },
-                  { title: 'TRANSFER REQUEST', detail: 'Request #TR-01982' },
-                  { title: 'NEW OWNER', detail: 'Rahul Sharma' },
-                  { title: 'AUTHORITY REVIEW', detail: 'Pending' },
-                  { title: 'DIGITAL OWNERSHIP RECORD', detail: 'Not Updated' },
-                ].map((step, idx) => (
-                  <div key={idx} className={`p-3 rounded-xl border ${idx < 3 ? 'bg-emerald-50 border-emerald-200 text-[#159A9C] font-bold' : idx === 3 ? 'bg-amber-50 border-amber-300 text-amber-800 font-bold' : 'bg-[#F5F7F7] border-[#E2E7E7] text-[#687272]'}`}>
-                    <div className="text-[10px] text-[#687272]">{step.title}</div>
-                    <div className="mt-1">{step.detail}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* CHECKLIST & BUTTONS */}
-              <div className="pt-2 space-y-3">
-                <h4 className="text-xs font-mono uppercase font-bold text-[#687272]">Transfer Checklist</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
-                  <span className="text-[#159A9C] font-bold">✓ Vehicle verified</span>
-                  <span className="text-[#159A9C] font-bold">✓ Seller verified</span>
-                  <span className="text-[#159A9C] font-bold">✓ Buyer verified</span>
-                  <span className="text-[#159A9C] font-bold">✓ Documents verified</span>
-                  <span className="text-[#159A9C] font-bold">✓ Transaction secured</span>
-                  <span className="text-amber-800 font-bold">○ Authority approval</span>
-                </div>
-
-                <div className="pt-3 flex items-center space-x-3">
-                  <button
-                    onClick={() => { alert('Transfer Approved & Signed on Ethereum Sepolia!'); setSelectedTransfer(null); }}
-                    className="px-6 py-2.5 rounded-xl bg-[#159A9C] hover:bg-[#123B3D] text-white font-bold text-xs uppercase cursor-pointer"
-                  >
-                    Approve Transfer
-                  </button>
-                  <button
-                    onClick={() => alert('Correction requested')}
-                    className="px-6 py-2.5 rounded-xl bg-white border border-[#E2E7E7] text-[#171C1C] font-bold text-xs uppercase cursor-pointer"
-                  >
-                    Request Correction
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ──────────────────────────────────────────────────────────
-          TAB 5: AUDIT TRAIL PAGE
-      ────────────────────────────────────────────────────────── */}
-      {activeTab === 'audit-trail' && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-heading font-extrabold uppercase text-[#171C1C] tracking-tight">
-              Ownership & Verification Audit Trail
-            </h1>
-            <p className="text-xs font-mono text-[#687272]">“A transparent history of important vehicle events.”</p>
-          </div>
-
-          <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs space-y-6">
-            {/* VERTICAL TIMELINE */}
-            <div className="relative pl-6 border-l-2 border-[#159A9C]/40 space-y-6 font-mono text-xs">
-              {[
-                { title: 'Vehicle Registered', time: '12 Sep 2026 • 10:42 AM', desc: 'Vehicle added to carNodes registry.' },
-                { title: 'Documents Verified', time: '12 Sep 2026 • 11:08 AM', desc: 'Registration and ownership documents verified.' },
-                { title: 'Vehicle Approved', time: '12 Sep 2026 • 11:32 AM', desc: 'Authority approved the vehicle.' },
-                { title: 'Transfer Initiated', time: '13 Sep 2026 • 02:15 PM', desc: 'Ownership transfer requested.' },
-                { title: 'Authority Review', time: 'Pending', desc: 'Awaiting final transfer signature.' },
-              ].map((ev, i) => (
-                <div key={i} className="relative space-y-1">
-                  <div className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-[#159A9C] border-2 border-white ring-2 ring-[#159A9C]/20" />
-                  <div className="font-bold text-[#171C1C] text-sm">{ev.title}</div>
-                  <div className="text-[11px] text-[#159A9C] font-bold">{ev.time}</div>
-                  <p className="text-xs text-[#687272]">{ev.desc}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* BLOCKCHAIN RECORD CARD AT BOTTOM */}
-            <div className="pt-4 border-t border-[#E2E7E7]">
-              <div className="p-5 rounded-2xl bg-[#123B3D] text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 font-mono text-xs">
-                <div className="space-y-1">
-                  <span className="text-[#159A9C] font-bold uppercase text-[10px] block">BLOCKCHAIN RECORD LAYER</span>
-                  <div className="text-sm font-bold text-white">Network: Ethereum Sepolia</div>
-                  <div className="text-zinc-300 text-[11px]">Record Status: ✓ Verified • Vehicle ID: CN-1969-001</div>
-                </div>
-
-                <button
-                  onClick={() => window.open('https://sepolia.etherscan.io/', '_blank')}
-                  className="px-5 py-2.5 rounded-xl bg-[#159A9C] hover:bg-[#0F7072] text-white font-bold text-xs uppercase flex items-center space-x-1.5 cursor-pointer shrink-0"
-                >
-                  <span>View Blockchain Record →</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ──────────────────────────────────────────────────────────
-          TAB 6: RISK ALERTS PAGE
-      ────────────────────────────────────────────────────────── */}
-      {activeTab === 'risk-alerts' && (
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-heading font-extrabold uppercase text-[#171C1C] tracking-tight">
-              Risk Alerts
-            </h1>
-            <p className="text-xs font-mono text-[#687272]">“Records requiring additional attention.”</p>
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
+            <h2 className="text-xl font-heading font-extrabold text-slate-900">
+              Ownership Transfer Requests ({MOCK_AUTHORITY_DATA.transferRequests.length})
+            </h2>
+            <p className="text-xs text-slate-500">
+              Verify smart escrow locking and digitally approve title transfer between parties.
+            </p>
           </div>
 
           <div className="space-y-4">
-            {[
-              { title: 'Document mismatch detected', vehicle: 'BMW 3 Series', issue: 'Registration details do not match submitted ownership document.', risk: 'Medium Risk' },
-              { title: 'Finance verification pending', vehicle: 'Toyota Fortuner', issue: 'Finance status requires additional verification.', risk: 'Medium Risk' },
-              { title: 'Ownership information requires review', vehicle: 'Hyundai Creta', issue: 'Previous ownership record requires confirmation.', risk: 'High Risk' },
-            ].map((alertItem, i) => (
-              <div key={i} className="bg-white p-6 rounded-[18px] border border-[#E2E7E7] shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                    <h3 className="text-base font-heading font-extrabold text-[#171C1C]">{alertItem.title}</h3>
+            {MOCK_AUTHORITY_DATA.transferRequests.map((tr) => (
+              <div key={tr.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                  <div>
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">Transfer ID: {tr.id}</span>
+                    <h3 className="text-base font-bold font-heading text-slate-900">{tr.vehicleName}</h3>
                   </div>
-                  <div className="text-xs font-mono font-bold text-[#159A9C]">Vehicle: {alertItem.vehicle}</div>
-                  <p className="text-xs text-[#687272]">{alertItem.issue}</p>
+                  <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-mono font-bold">
+                    {tr.status}
+                  </span>
                 </div>
 
-                <div className="flex items-center space-x-3 shrink-0">
-                  <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
-                    {alertItem.risk}
-                  </span>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="p-3 rounded-xl bg-slate-50">
+                    <span className="text-slate-400 block text-[10px]">Seller</span>
+                    <strong>{tr.currentOwner}</strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50">
+                    <span className="text-slate-400 block text-[10px]">Buyer</span>
+                    <strong>{tr.newOwner}</strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50">
+                    <span className="text-slate-400 block text-[10px]">Escrow Amount</span>
+                    <strong className="text-teal-800">{tr.escrowAmount}</strong>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50">
+                    <span className="text-slate-400 block text-[10px]">Tax & Title Status</span>
+                    <strong className="text-emerald-700">{tr.taxPaidStatus}</strong>
+                  </div>
+                </div>
+
+                {/* Audit Timeline */}
+                <div className="pt-2 flex justify-end space-x-3">
                   <button
-                    onClick={() => handleOpenReview(queueItems[1])}
-                    className="px-5 py-2.5 rounded-xl bg-[#171C1C] hover:bg-[#159A9C] text-white font-bold text-xs font-mono cursor-pointer"
+                    onClick={() => alert("Digital Title Transfer Signed by Authority Node #409 on Ethereum Sepolia!")}
+                    className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-1.5 cursor-pointer shadow-xs"
                   >
-                    Review →
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Authorize Ownership Transfer</span>
                   </button>
                 </div>
               </div>
@@ -866,127 +598,69 @@ export default function AuthorityDashboardView({
         </div>
       )}
 
-      {/* ──────────────────────────────────────────────────────────
-          TAB 7: AUTHORITY PROFILE PAGE
-      ────────────────────────────────────────────────────────── */}
-      {(activeTab === 'profile' || activeTab === 'settings') && (
+      {/* ==========================================================
+          5. RISK ALERTS & AUDIT TRAIL
+      ========================================================== */}
+      {activeTab === 'risk-alerts' && (
         <div className="space-y-6">
-          <div>
-            <h1 className="text-2xl font-heading font-extrabold uppercase text-[#171C1C] tracking-tight">
-              Authority Profile
-            </h1>
-            <p className="text-xs font-mono text-[#687272]">Official verifier account credentials & node parameters</p>
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
+            <h2 className="text-xl font-heading font-extrabold text-slate-900">
+              Active Risk Alerts ({MOCK_AUTHORITY_DATA.riskAlerts.length})
+            </h2>
+            <p className="text-xs text-slate-500">
+              Anomalies detected in submitted serial numbers, hypothecation status, or insurance validity.
+            </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-[18px] border border-[#E2E7E7] shadow-xs max-w-2xl space-y-6 font-mono text-xs">
-            <div className="flex items-center space-x-4 border-b border-[#E2E7E7] pb-6">
-              <div className="w-16 h-16 rounded-2xl bg-[#123B3D] text-[#159A9C] flex items-center justify-center font-heading font-extrabold text-2xl">
-                AUTH
+          <div className="space-y-3">
+            {MOCK_AUTHORITY_DATA.riskAlerts.map((alt) => (
+              <div key={alt.id} className="p-5 rounded-2xl bg-white border border-rose-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-mono font-bold uppercase">
+                      {alt.severity} Severity
+                    </span>
+                    <span className="font-bold text-slate-900 text-xs">{alt.vehicle}</span>
+                  </div>
+                  <p className="text-xs text-slate-600">{alt.issue}</p>
+                  <p className="text-[10px] font-mono text-slate-400">{alt.date}</p>
+                </div>
+                <button
+                  onClick={() => alert(`Action initialized: ${alt.action}`)}
+                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-700 text-white font-bold text-xs transition-all cursor-pointer whitespace-nowrap"
+                >
+                  {alt.action}
+                </button>
               </div>
-              <div>
-                <h2 className="text-lg font-heading font-extrabold text-[#171C1C]">Authority Node #00182</h2>
-                <span className="text-xs font-bold text-[#159A9C]">Authorized Vehicle Authority</span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Authority ID:</span>
-                <strong className="text-[#171C1C]">AUTH-CN-00182</strong>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Organization:</span>
-                <strong className="text-[#171C1C]">Regional Vehicle Authority (RTO)</strong>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Verification Status:</span>
-                <strong className="text-[#159A9C]">✓ Verified Authority</strong>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Connected Wallet:</span>
-                <strong className="text-[#171C1C]">0x71C7...9A2C (MetaMask)</strong>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Authentication Layer:</span>
-                <strong className="text-[#171C1C]">OTP / Email Verified</strong>
-              </div>
-              <div className="flex justify-between py-2 border-b border-[#E2E7E7]/60">
-                <span className="text-[#687272]">Node Status:</span>
-                <strong className="text-[#159A9C]">● Active Operational</strong>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* ──────────────────────────────────────────────────────────
-          CONFIRMATION APPROVAL MODAL
-      ────────────────────────────────────────────────────────── */}
-      {showApprovalModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white w-full max-w-md rounded-[18px] border border-[#E2E7E7] shadow-2xl p-6 space-y-5 relative">
-            <button
-              onClick={() => setShowApprovalModal(false)}
-              className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-800 p-1"
-            >
-              <X className="w-5 h-5" />
-            </button>
+      {activeTab === 'audit-trail' && (
+        <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-6">
+          <div>
+            <h2 className="text-xl font-heading font-extrabold text-slate-900">
+              Immutable Authority Audit Trail
+            </h2>
+            <p className="text-xs text-slate-500">
+              Cryptographic transaction logs signed by certified authority oracle nodes on Ethereum Sepolia.
+            </p>
+          </div>
 
-            {approvalSuccess ? (
-              <div className="text-center py-6 space-y-3">
-                <div className="w-14 h-14 rounded-full bg-emerald-100 text-[#159A9C] flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8 animate-bounce" />
-                </div>
-                <h3 className="text-lg font-heading font-extrabold text-[#171C1C]">✓ Vehicle Verified</h3>
-                <p className="text-xs text-[#687272]">
-                  “Vehicle has been added to the carNodes verified registry.”
-                </p>
-              </div>
-            ) : (
-              <>
+          <div className="space-y-3 font-mono text-xs">
+            {MOCK_AUTHORITY_DATA.auditTrail.map((log) => (
+              <div key={log.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-lg font-heading font-extrabold text-[#171C1C]">Approve Vehicle?</h3>
-                  <p className="text-xs text-[#687272] mt-1">
-                    “You are approving this vehicle for the carNodes verified registry.”
-                  </p>
+                  <span className="font-bold text-slate-900 block font-sans">{log.action}: {log.vehicle}</span>
+                  <span className="text-[11px] text-slate-500">Operator: {log.operator} • {log.date}</span>
                 </div>
-
-                <div className="p-4 rounded-xl bg-[#F5F7F7] border border-[#E2E7E7] text-xs font-mono space-y-1">
-                  <div className="font-bold text-[#171C1C]">{selectedItem.model}</div>
-                  <div className="text-[#687272]">Vehicle ID: {selectedItem.id}</div>
+                <div className="text-right">
+                  <span className="text-teal-700 font-bold block">{log.txHash}</span>
+                  <span className="text-[10px] text-emerald-700">✓ {log.status}</span>
                 </div>
-
-                <div className="flex items-start space-x-2 pt-1">
-                  <input
-                    type="checkbox"
-                    id="modal-confirm-chk"
-                    checked={confirmedCheck}
-                    onChange={(e) => setConfirmedCheck(e.target.checked)}
-                    className="w-4 h-4 mt-0.5 rounded border-[#E2E7E7] text-[#159A9C] focus:ring-[#159A9C]"
-                  />
-                  <label htmlFor="modal-confirm-chk" className="text-xs text-[#171C1C] cursor-pointer leading-tight">
-                    I have reviewed the vehicle and submitted documents.
-                  </label>
-                </div>
-
-                <div className="flex items-center space-x-3 pt-2">
-                  <button
-                    onClick={() => setShowApprovalModal(false)}
-                    className="flex-1 py-2.5 rounded-xl border border-[#E2E7E7] text-xs font-semibold text-zinc-600 hover:bg-[#F5F7F7]"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    onClick={handleConfirmApprovalSubmit}
-                    disabled={!confirmedCheck}
-                    className="flex-1 py-2.5 rounded-xl bg-[#159A9C] hover:bg-[#123B3D] text-white font-bold text-xs uppercase disabled:opacity-40"
-                  >
-                    Confirm Approval
-                  </button>
-                </div>
-              </>
-            )}
+              </div>
+            ))}
           </div>
         </div>
       )}
