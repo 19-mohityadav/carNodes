@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const blockchainController = require('../controllers/blockchain.controller');
 const vehicleController = require('../controllers/vehicle.controller');
 const { authenticate, requireRole } = require('../middleware/auth');
 const documentRoutes = require('./document.routes');
@@ -10,6 +11,8 @@ router.get('/:id', vehicleController.getVehicleById);
 
 // Protected routes
 router.post('/', authenticate, requireRole('SELLER', 'AUTHORITY'), vehicleController.createVehicle);
+// Sync vehicle blockchain state (e.g., after off-chain updates)
+router.patch('/:id/blockchain', authenticate, requireRole('SELLER', 'AUTHORITY', 'BUYER'), blockchainController.syncVehicleBlockchain);
 router.patch('/:id/verify', authenticate, requireRole('AUTHORITY'), vehicleController.verifyVehicle);
 router.patch('/:id/list', authenticate, requireRole('SELLER'), vehicleController.updateListingStatus);
 router.post('/:id/transfer', authenticate, requireRole('BUYER'), vehicleController.transferOwnership);
