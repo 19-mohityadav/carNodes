@@ -81,26 +81,7 @@ export default function HeroShowroom({
               <span className="flex items-center space-x-1.5"><span className="text-emerald-600">●</span> Blockchain-Backed</span>
             </div>
 
-            {/* Active Passport Mini Preview Card on Left */}
-            <div className="w-full pt-4">
-              <div className="glass-card rounded-2xl border border-zinc-200/90 p-4 shadow-sm flex items-center justify-between bg-white/70">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#2B2521] text-white flex items-center justify-center font-bold text-xs font-mono">
-                    {activeCar.id}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold font-heading text-[#111111]">{activeCar.shortName}</h4>
-                    <p className="text-[11px] font-mono text-[#6E6259]">{activeCar.vin}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-mono font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full inline-block">
-                    Score {activeCar.trustScore}/100
-                  </span>
-                  <p className="text-xs font-heading font-extrabold text-[#2B2521] mt-1">${activeCar.priceUsd.toLocaleString()}</p>
-                </div>
-              </div>
-            </div>
+
           </div>
 
           {/* RIGHT COLUMN (6 cols): 3D Circular Motion Orbit Carousel */}
@@ -111,23 +92,7 @@ export default function HeroShowroom({
                 activeIndex={activeIndex}
               />
 
-              {/* Active car indicator under circular motion */}
-              <div className="mt-4 text-center space-y-1 bg-white/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-zinc-200 shadow-md w-full max-w-sm">
-                <p className="text-[10px] font-mono uppercase tracking-widest text-[#6E6259] font-bold">
-                  Currently Orbiting Selection
-                </p>
-                <h3 className="text-lg font-heading font-extrabold text-[#111111] tracking-tight">
-                  {activeCar.shortName} ({activeCar.year})
-                </h3>
-                <div className="flex items-center justify-center space-x-3 text-xs font-mono mt-0.5">
-                  <span className="text-[#B36B39] font-bold">
-                    Trust {activeCar.trustScore}/100
-                  </span>
-                  <span className="text-emerald-700 font-bold">
-                    ${activeCar.priceUsd.toLocaleString()}
-                  </span>
-                </div>
-              </div>
+
             </div>
           </div>
 

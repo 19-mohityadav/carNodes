@@ -125,7 +125,13 @@ export default function MarketplaceModal({
                 return (
                   <div
                     key={car.id}
-                    onClick={() => setSelectedVehicle(car)}
+                    onClick={() => {
+                  if (!walletConnected) {
+                    onOpenWalletModal();
+                    return;
+                  }
+                  setSelectedVehicle(car);
+                }}
                     className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row gap-4 items-center ${
                       isSelected
                         ? 'bg-white border-[#FF3B30] shadow-md ring-2 ring-[#FF3B30]/10'
