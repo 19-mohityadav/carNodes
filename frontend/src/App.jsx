@@ -1,11 +1,9 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { WalletProvider } from './context/WalletContext';
 import { RoleProvider } from './context/RoleContext';
-import { Navbar } from './components/layout/Navbar';
+import { Navbar } from './components/Navbar';
 import { Footer } from './components/layout/Footer';
-
-// 12 Demo Pages for Hackathon Walkthrough
-import Landing from './pages/Landing';
+import Home from './pages/Home';
 import Marketplace from './pages/Marketplace';
 import VehicleDetail from './pages/VehicleDetail';
 import Passport from './pages/Passport';
@@ -23,12 +21,12 @@ export default function App() {
     <BrowserRouter>
       <WalletProvider>
         <RoleProvider>
-          <div className="flex flex-col min-h-screen bg-swiss-white text-swiss-black selection:bg-swiss-accent selection:text-swiss-white">
+          <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 font-sans">
             <Navbar />
             <main className="flex-1">
               <Routes>
-                {/* 01. Landing Hero & Protocol Overview */}
-                <Route path="/" element={<Landing />} />
+                {/* Home Landing Page with Hero */}
+                <Route path="/" element={<Home />} />
 
                 {/* 02. Marketplace Browse & Search */}
                 <Route path="/marketplace" element={<Marketplace />} />
