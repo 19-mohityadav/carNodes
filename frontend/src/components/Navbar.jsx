@@ -31,7 +31,7 @@ export default function Navbar({
   const getRoleBadgeStyle = (role) => {
     switch (role?.toLowerCase()) {
       case 'seller':
-        return 'bg-slate-100 text-[#3D5066] border-slate-300';
+        return 'bg-slate-100 text-[#b7b9bd] border-slate-300';
       case 'authority':
         return 'bg-emerald-100 text-emerald-800 border-emerald-300';
       case 'buyer':
@@ -46,7 +46,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 glass-nav border-b border-zinc-200/80 transition-all duration-300">
+    <header className="sticky top-0 z-50 glass-nav border-b border-zinc-200/80 bg-gray-200 text-white transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
 
@@ -66,7 +66,7 @@ export default function Navbar({
                 key={link.name}
                 href={link.href}
                 onClick={link.action ? (e) => { e.preventDefault(); link.action(); } : undefined}
-                className="text-sm font-semibold text-[#3D5066] hover:text-[#0D9488] transition-colors duration-200 relative group tracking-wide"
+                className="text-sm font-semibold text-white hover:text-[#B89B5E] transition-colors duration-200 relative group tracking-wide"
               >
                 {link.name}
                 <span className="absolute -bottom-0.5 left-0 w-0 h-[2px] bg-[#0D9488] transition-all duration-200 group-hover:w-full rounded-full" />
@@ -197,7 +197,7 @@ export default function Navbar({
                 <button
                   id="nav-login-btn"
                   onClick={() => onOpenLogin && onOpenLogin('signin')}
-                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-[#3D5066] border border-[#3D5066]/30 hover:border-[#0D9488] hover:text-[#0D9488] bg-white transition-all duration-200 cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white border border-white/30 hover:border-[#0D9488] hover:text-[#0D9488] bg-gray-800 transition-all duration-200 cursor-pointer"
                 >
                   Login
                 </button>
@@ -206,9 +206,9 @@ export default function Navbar({
                 <button
                   id="nav-get-started-btn"
                   onClick={() => onOpenGetStarted ? onOpenGetStarted('signup') : onOpenLogin('signup')}
-                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#3D5066] hover:bg-[#0D9488] transition-all duration-200 shadow-md hover:shadow-lg tracking-wide cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-[#2C3F5C] hover:bg-[#0D9488] transition-all duration-200 shadow-md hover:shadow-lg tracking-wide cursor-pointer"
                 >
-                  Get Started
+                  Sign Up
                 </button>
               </>
             )}
@@ -223,14 +223,14 @@ export default function Navbar({
             ) : (
               <button
                 onClick={() => onOpenLogin && onOpenLogin('signin')}
-                className="text-sm font-semibold text-[#3D5066] border border-[#3D5066]/30 px-3 py-1.5 rounded-lg"
+                className="text-sm font-semibold text-white border border-white/30 px-3 py-1.5 rounded-lg"
               >
                 Login
               </button>
             )}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-[#3D5066] hover:text-[#B89B5E]"
+              className="p-2 text-white hover:text-[#B89B5E]"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -241,7 +241,7 @@ export default function Navbar({
 
       {/* Mobile Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-[#FDFBF7] border-b border-zinc-200 px-6 pt-2 pb-6 space-y-1 animate-fadeIn">
+        <div className="md:hidden bg-[#9f8a61] border-b border-zinc-200 px-6 pt-2 pb-6 space-y-1 animate-fadeIn">
           {navLinks.map((link) => (
             <a
               key={link.name}
@@ -250,7 +250,7 @@ export default function Navbar({
                 setMobileMenuOpen(false);
                 if (link.action) { e.preventDefault(); link.action(); }
               }}
-              className="block py-3 text-sm font-semibold text-[#3D5066] hover:text-[#B89B5E] border-b border-zinc-100 transition-colors"
+              className="block py-3 text-sm font-semibold text-[#2C3F5C] hover:text-[#B89B5E] border-b border-zinc-100 transition-colors"
             >
               {link.name}
             </a>
@@ -274,9 +274,9 @@ export default function Navbar({
             ) : (
               <button
                 onClick={() => { setMobileMenuOpen(false); if (onOpenGetStarted) onOpenGetStarted('signup'); }}
-                className="w-full py-3 rounded-xl bg-[#3D5066] text-white font-bold text-sm"
+                className="w-full py-3 rounded-xl bg-[#2C3F5C] text-white font-bold text-sm"
               >
-                Get Started
+                Sign Up
               </button>
             )}
           </div>
