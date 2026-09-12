@@ -19,8 +19,18 @@ export default defineConfig({
       chainType: "l1",
       url: process.env.SEPOLIA_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY
-        ? [process.env.PRIVATE_KEY]
+        ? [
+            process.env.PRIVATE_KEY.startsWith("0x")
+              ? process.env.PRIVATE_KEY
+              : `0x${process.env.PRIVATE_KEY}`,
+          ]
         : [],
+    },
+  },
+
+  verify: {
+    etherscan: {
+      apiKey: process.env.ETHERSCAN_API_KEY || "",
     },
   },
 });
