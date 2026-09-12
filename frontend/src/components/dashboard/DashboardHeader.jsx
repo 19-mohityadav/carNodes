@@ -129,29 +129,12 @@ export default function DashboardHeader({
         </div>
       </div>
 
-      {/* Center / Search Bar */}
-      <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
-        <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search make, model, VIN or vehicle ID (e.g. CN-48291)..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200/90 text-xs focus:outline-none focus:bg-white focus:border-teal-600 focus:ring-1 focus:ring-teal-600 transition-all font-mono"
-          />
-        </div>
-      </div>
 
       {/* Right Actions: Notifications, Wallet, Profile */}
       <div className="flex items-center space-x-2.5 sm:space-x-3.5">
         
         {/* Subtle MetaMask Wallet Indicator */}
         <div className="hidden sm:flex items-center space-x-2 bg-slate-50 border border-slate-200/90 px-3 py-1.5 rounded-xl text-xs font-mono">
-          <div className="flex items-center space-x-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-slate-800">MetaMask</span>
-          </div>
           <span className="text-slate-400">|</span>
           <span className="text-slate-600 font-bold">{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
           <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-100 text-teal-800 font-bold">Sepolia</span>
