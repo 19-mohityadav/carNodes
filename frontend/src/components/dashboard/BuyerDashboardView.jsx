@@ -114,19 +114,14 @@ export default function BuyerDashboardView({
           {/* Header Banner */}
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-mono font-semibold">
-                <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
-                <span>VERIFIED BUYER PORTAL</span>
-              </div>
+            
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
                 Good morning, {MOCK_BUYER_DATA.name}
               </h1>
               <h2 className="text-lg font-heading font-bold text-teal-900">
-                Find a vehicle you can trust.
+                Find a verified vehicle.
               </h2>
-              <p className="text-sm text-slate-500 leading-relaxed">
-                Explore verified vehicles with transparent history and secure ownership records.
-              </p>
+              
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
@@ -137,13 +132,7 @@ export default function BuyerDashboardView({
                 <span>Explore Vehicles</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
-              <button
-                onClick={() => onSelectTab('ai-agent')}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-50 hover:bg-teal-50 text-slate-700 hover:text-teal-800 border border-slate-200 hover:border-teal-300 font-semibold text-xs uppercase tracking-wider transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer"
-              >
-                <Bot className="w-4 h-4 text-teal-600" />
-                <span>Ask AI Agent</span>
-              </button>
+              
             </div>
           </div>
 
@@ -151,12 +140,6 @@ export default function BuyerDashboardView({
               TRUST SUMMARY — EXACTLY FOUR COMPACT CARDS
           ========================================================== */}
           <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
-                Buyer Trust Summary
-              </h3>
-              <span className="text-xs font-mono text-teal-700 font-bold">Ethereum Sepolia Synchronized</span>
-            </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Card 1 */}
@@ -166,9 +149,7 @@ export default function BuyerDashboardView({
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
                     {MOCK_BUYER_DATA.stats.verifiedViewed}
                   </span>
-                  <span className="text-[11px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
-                    +4 this week
-                  </span>
+                  
                 </div>
               </div>
 
@@ -219,9 +200,7 @@ export default function BuyerDashboardView({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-heading font-extrabold text-slate-900">
-                  Verified for You
-                </h2>
+                
                 <p className="text-xs text-slate-500">
                   Hand-picked luxury & performance vehicles with complete RTO and on-chain verification stamps.
                 </p>
@@ -230,7 +209,7 @@ export default function BuyerDashboardView({
                 onClick={() => onSelectTab('explore')}
                 className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center space-x-1 cursor-pointer"
               >
-                <span>View All 4 Vehicles</span>
+                <span>View All Vehicles</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -535,92 +514,7 @@ export default function BuyerDashboardView({
         </div>
       )}
 
-      {/* ==========================================================
-          4. AI VEHICLE AGENT VIEW
-      ========================================================== */}
-      {activeTab === 'ai-agent' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
-            <div className="max-w-2xl space-y-2 mb-6">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-mono font-semibold">
-                <Bot className="w-3.5 h-3.5 text-teal-600" />
-                <span>AUTONOMOUS VEHICLE INTELLIGENCE</span>
-              </div>
-              <h2 className="text-2xl font-heading font-extrabold text-slate-900">
-                Your AI Vehicle Agent
-              </h2>
-              <p className="text-xs text-slate-500">
-                “Ask anything before you buy.” Verified valuation, risk assessments, and historical telemetry data.
-              </p>
-            </div>
-
-            {/* Example question chips */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {[
-                "Is this vehicle fairly priced?",
-                "Show me similar verified vehicles.",
-                "Does this vehicle have any risk?",
-                "Compare these two vehicles.",
-                "Explain this vehicle's history."
-              ].map((chip, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAskPrompt(chip)}
-                  className="px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 text-xs font-medium text-slate-700 hover:text-teal-900 transition-colors cursor-pointer"
-                >
-                  💬 {chip}
-                </button>
-              ))}
-            </div>
-
-            {/* Chat message area */}
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-4 sm:p-6 space-y-4 min-h-[260px] max-h-[380px] overflow-y-auto mb-4">
-              {chatMessages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-lg p-4 rounded-2xl text-xs leading-relaxed ${
-                      msg.sender === 'user'
-                        ? 'bg-slate-900 text-white font-medium rounded-br-none'
-                        : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-xs'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {isAiTyping && (
-                <div className="flex justify-start">
-                  <div className="p-3 rounded-2xl bg-white border border-slate-200 text-xs text-slate-400 flex items-center space-x-2">
-                    <RefreshCw className="w-3.5 h-3.5 text-teal-600 animate-spin" />
-                    <span>Analyzing RTO database & Sepolia oracle...</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Chat Input */}
-            <form onSubmit={handleSendChat} className="flex items-center space-x-2">
-              <input
-                type="text"
-                value={inputQuestion}
-                onChange={(e) => setInputQuestion(e.target.value)}
-                placeholder="Ask about fair pricing, accident checks, or transfer procedures..."
-                className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-teal-600 focus:bg-white font-sans"
-              />
-              <button
-                type="submit"
-                className="px-5 py-3 rounded-xl bg-slate-900 hover:bg-teal-700 text-white text-xs font-bold transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer"
-              >
-                <span>Send</span>
-                <Send className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      
 
       {/* ==========================================================
           5. SAVED VEHICLES & PURCHASES VIEW
