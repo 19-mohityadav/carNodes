@@ -77,16 +77,11 @@ export default function AuthorityDashboardView({
           {/* Header Banner */}
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-mono font-semibold border border-emerald-200">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>OFFICIAL RTO / DMV ORACLE NODE #409</span>
-              </div>
+              
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
                 Authority Dashboard
               </h1>
-              <h2 className="text-base font-heading font-bold text-emerald-900">
-                Vehicle verification & ownership management
-              </h2>
+              
               <p className="text-sm text-slate-500 leading-relaxed">
                 Review submitted physical title deeds, validate telemetry from certified inspection stations, and sign RWA ownership transitions on Ethereum Sepolia.
               </p>
@@ -97,7 +92,7 @@ export default function AuthorityDashboardView({
                 onClick={() => onSelectTab('queue')}
                 className="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-900 hover:bg-emerald-800 text-white font-semibold text-xs uppercase tracking-wider transition-all duration-200 shadow-xs flex items-center justify-center space-x-2 cursor-pointer"
               >
-                <span>Process Queue (24)</span>
+                <span>Process Queue</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
@@ -111,7 +106,6 @@ export default function AuthorityDashboardView({
               <h3 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
                 Authority Operational Metrics
               </h3>
-              <span className="text-xs font-mono text-emerald-700 font-bold">Node MH02 Active</span>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -135,9 +129,7 @@ export default function AuthorityDashboardView({
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
                     {MOCK_AUTHORITY_DATA.stats.approvedToday}
                   </span>
-                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold">
-                    +6 in last hour
-                  </span>
+                  
                 </div>
               </div>
 
@@ -173,9 +165,7 @@ export default function AuthorityDashboardView({
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h3 className="text-base font-heading font-bold text-slate-900">
-                  Priority Verification Queue
-                </h3>
+                
                 <p className="text-xs text-slate-500">
                   Recent document submissions awaiting official RTO verification.
                 </p>
