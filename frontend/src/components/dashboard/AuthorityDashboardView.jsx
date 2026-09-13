@@ -26,8 +26,6 @@ import {
   Lock,
   FileBadge2
 } from 'lucide-react';
-import { MOCK_AUTHORITY_DATA } from '../../data/dashboardData';
-import { VEHICLES } from '../../data/vehicles';
 import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../../contracts/addresses';
 import { useWallet } from '../../context/WalletContext';
 import { verifyVehicleOnChain, mintVehiclePassport } from '../../services/blockchainService';
@@ -49,7 +47,7 @@ export default function AuthorityDashboardView({
   const { signer, account } = useWallet();
   const [queue, setQueue] = useState(() => getVerificationQueue());
   const [auditTrail, setAuditTrail] = useState(() => getAuthorityAuditTrail());
-  const [selectedQueueItem, setSelectedQueueItem] = useState(() => getVerificationQueue()[0]);
+  const [selectedQueueItem, setSelectedQueueItem] = useState(() => getVerificationQueue()[0] || null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [confirmedCheck, setConfirmedCheck] = useState(false);
   const [decisionSuccess, setDecisionSuccess] = useState(null);
@@ -271,26 +269,23 @@ export default function AuthorityDashboardView({
 
               {/* Card 3 */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-semibold text-slate-500 block">Transfer Requests</span>
+                <span className="text-xs font-semibold text-slate-500 block">Live on Marketplace</span>
                 <div className="mt-2 flex items-baseline justify-between">
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
-                    {MOCK_AUTHORITY_DATA.stats.transferRequests}
+                    {getAllVehicles().filter(v => v.listingStatus === 'Listed on Marketplace').length}
                   </span>
-                  <button onClick={() => onSelectTab('transfers')} className="text-xs text-teal-700 hover:underline font-semibold cursor-pointer">
-                    Inspect
-                  </button>
                 </div>
               </div>
 
               {/* Card 4 */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-semibold text-slate-500 block">Risk Alerts</span>
+                <span className="text-xs font-semibold text-slate-500 block">Audit Log Entries</span>
                 <div className="mt-2 flex items-baseline justify-between">
-                  <span className="text-3xl font-heading font-extrabold text-rose-600">
-                    {MOCK_AUTHORITY_DATA.stats.riskAlerts}
+                  <span className="text-3xl font-heading font-extrabold text-emerald-700">
+                    {auditTrail.length}
                   </span>
-                  <button onClick={() => onSelectTab('risk-alerts')} className="text-[11px] font-mono text-rose-700 bg-rose-50 px-2 py-0.5 rounded font-bold">
-                    Needs Action
+                  <button onClick={() => onSelectTab('audit-trail')} className="text-[11px] font-mono text-teal-700 hover:underline font-semibold cursor-pointer">
+                    View
                   </button>
                 </div>
               </div>
@@ -301,40 +296,50 @@ export default function AuthorityDashboardView({
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                
+                <h3 className="text-base font-heading font-bold text-slate-900">Pending Submissions</h3>
                 <p className="text-xs text-slate-500">
-                  Recent document submissions awaiting official RTO verification.
+                  Recent document submissions uploaded by sellers awaiting official RTO verification.
                 </p>
               </div>
               <button
                 onClick={() => onSelectTab('queue')}
                 className="text-xs font-bold text-teal-700 hover:underline cursor-pointer"
               >
-                View Full Queue →
+                View Full Queue ({queue.length}) →
               </button>
             </div>
 
-            <div className="divide-y divide-slate-100">
-              {queue.slice(0, 3).map((item) => (
-                <div key={item.id} className="py-3.5 flex items-center justify-between text-xs">
-                  <div>
-                    <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
-                    <span className="text-[11px] text-slate-500 font-mono">Owner: {item.ownerName} • VIN: {item.vin}</span>
+            {queue.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400">
+                No submissions waiting in queue. Vehicles uploaded by sellers will appear here in real-time.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {queue.slice(0, 4).map((item) => (
+                  <div key={item.id} className="py-3.5 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
+                      <span className="text-[11px] text-slate-500 font-mono">Owner: {item.ownerName} • VIN: {item.vin}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
+                        item.status === 'Verified' || item.status === 'Verified & Minted'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
+                      }`}>
+                        {item.status}
+                      </span>
+                      <button
+                        onClick={() => handleOpenReview(item)}
+                        className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-emerald-800 text-white font-semibold cursor-pointer"
+                      >
+                        Review
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="px-2 py-0.5 rounded bg-slate-100 font-mono text-[10px] font-bold uppercase text-slate-700">
-                      {item.status}
-                    </span>
-                    <button
-                      onClick={() => handleOpenReview(item)}
-                      className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-emerald-800 text-white font-semibold cursor-pointer"
-                    >
-                      Review
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}
@@ -350,76 +355,88 @@ export default function AuthorityDashboardView({
                 Official Vehicle Verification Queue ({queue.length})
               </h2>
               <p className="text-xs text-slate-500">
-                Audit title deeds, chassis numbers, insurance validity, and hypothecation freedom before on-chain passport issuance.
+                Audit uploaded physical title deeds, engine numbers, IPFS hashes, and hypothecation freedom before on-chain passport issuance.
               </p>
             </div>
           </div>
 
           {/* Queue Table */}
           <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px] tracking-wider">
-                  <tr>
-                    <th className="py-4 px-6">Vehicle</th>
-                    <th className="py-4 px-4">Owner / Entity</th>
-                    <th className="py-4 px-4">Verification Type</th>
-                    <th className="py-4 px-4">Submitted</th>
-                    <th className="py-4 px-4">Risk</th>
-                    <th className="py-4 px-4">Status</th>
-                    <th className="py-4 px-6 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {queue.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-4 px-6">
-                        <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">Reg: {item.registrationNo} • {item.vin}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="font-semibold text-slate-800 block">{item.ownerName}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">{item.ownerType}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-slate-700 font-medium">{item.verificationType}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className="text-slate-500 font-mono">{item.submittedDate}</span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
-                          item.risk === 'LOW' ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-                        }`}>
-                          {item.risk} (Score {item.riskScore})
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                          item.status === 'Verified'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : item.status === 'Rejected'
-                            ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                            : item.status === 'Under Review'
-                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}>
-                          <span>{item.status}</span>
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 text-right">
-                        <button
-                          onClick={() => handleOpenReview(item)}
-                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
-                        >
-                          Review
-                        </button>
-                      </td>
+            {queue.length === 0 ? (
+              <div className="text-center py-16 px-4 space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-7 h-7" />
+                </div>
+                <h3 className="text-base font-heading font-bold text-slate-900">Verification Queue is Clear</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  No seller submissions are waiting in the queue. When a seller uploads a vehicle and pins their documents to IPFS, it will immediately appear here for review and Sepolia minting.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px] tracking-wider">
+                    <tr>
+                      <th className="py-4 px-6">Vehicle</th>
+                      <th className="py-4 px-4">Owner / Seller</th>
+                      <th className="py-4 px-4">Verification Type</th>
+                      <th className="py-4 px-4">Submitted</th>
+                      <th className="py-4 px-4">Risk</th>
+                      <th className="py-4 px-4">Status</th>
+                      <th className="py-4 px-6 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {queue.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 block">{item.vehicleName}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">Reg: {item.registrationNo} • VIN: {item.vin}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="font-semibold text-slate-800 block">{item.ownerName}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">{item.ownerAddress ? `${item.ownerAddress.slice(0, 8)}...${item.ownerAddress.slice(-6)}` : 'Individual Seller'}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-slate-700 font-medium">{item.verificationType}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-slate-500 font-mono">{item.submittedDate}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
+                            item.risk === 'LOW' ? 'bg-teal-50 text-teal-800 border border-teal-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+                          }`}>
+                            {item.risk} (Score {item.riskScore})
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            item.status === 'Verified' || item.status === 'Verified & Minted'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                              : item.status === 'Rejected'
+                              ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                              : item.status === 'Under Review'
+                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}>
+                            <span>{item.status}</span>
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            onClick={() => handleOpenReview(item)}
+                            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
+                          >
+                            Review
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -427,397 +444,473 @@ export default function AuthorityDashboardView({
       {/* ==========================================================
           VEHICLE VERIFICATION SCREEN MODAL (REVIEW WORKFLOW)
       ========================================================== */}
-      {reviewModalOpen && selectedQueueItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
-          <div className="bg-[#FDFBF7] w-full max-w-4xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto">
-            
-            {/* Header */}
-            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
-              <div>
-                <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block">Official Verification Dossier</span>
-                <h3 className="text-base font-heading font-extrabold text-white">
-                  Audit: {selectedQueueItem.vehicleName}
-                </h3>
-              </div>
-              <button
-                onClick={() => setReviewModalOpen(false)}
-                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {reviewModalOpen && selectedQueueItem && (() => {
+        const vehicle = getAllVehicles().find(v => v.id === selectedQueueItem.vehicleId || v.id === selectedQueueItem.id) || selectedQueueItem;
+        const ipfsDocs = vehicle.ipfsDocuments || selectedQueueItem.ipfsDocuments || {};
+        const metaCID = vehicle.metadataCID || selectedQueueItem.metadataCID;
+        const sellerAddress = selectedQueueItem.ownerAddress || vehicle.ownerAddress || '';
 
-            {/* Content Split */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FDFBF7]">
-              {decisionSuccess && (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                  <span>Authority Decision Recorded: {decisionSuccess.toUpperCase()} on Ethereum Sepolia!</span>
+        const docDefinitions = [
+          { key: 'rc', label: 'RC / Registration Certificate', fallbackKey: 'rcBook' },
+          { key: 'insurance', label: 'Active Insurance Policy', fallbackKey: null },
+          { key: 'ownership', label: 'Proof of Ownership / Invoice', fallbackKey: null },
+          { key: 'inspection', label: 'Inspection / Telemetry Report', fallbackKey: null }
+        ];
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn overflow-y-auto">
+            <div className="bg-[#FDFBF7] w-full max-w-4xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto">
+              
+              {/* Header */}
+              <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                <div>
+                  <span className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest block">Official Authority Review Dossier</span>
+                  <h3 className="text-base font-heading font-extrabold text-white">
+                    Audit: {selectedQueueItem.vehicleName}
+                  </h3>
                 </div>
-              )}
+                <button
+                  onClick={() => setReviewModalOpen(false)}
+                  className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-slate-800 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-                {/* LEFT (5 cols): Vehicle Identity */}
-                <div className="md:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs">
-                  <div className="h-32 bg-slate-50 rounded-xl border border-slate-100 p-2 flex items-center justify-center">
-                    <img src="/cars/audi_r8_camry.png" alt="Vehicle" className="max-h-full object-contain" />
+              {/* Content Split */}
+              <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-[#FDFBF7]">
+                {decisionSuccess && (
+                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center space-x-2">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <span>Authority Decision Recorded: {decisionSuccess.toUpperCase()} on Ethereum Sepolia!</span>
                   </div>
+                )}
 
-                  <div className="space-y-2">
-                    <h4 className="font-heading font-bold text-slate-900 text-sm">{selectedQueueItem.vehicleName}</h4>
-                    <div className="p-2.5 rounded-lg bg-slate-50 font-mono space-y-1 text-[11px]">
-                      <div>VIN: <strong className="text-slate-900">{selectedQueueItem.vin}</strong></div>
-                      <div>Registration: <strong className="text-slate-900">{selectedQueueItem.registrationNo}</strong></div>
-                      <div>Current Owner: <strong className="text-slate-900">{selectedQueueItem.ownerName}</strong></div>
-                    </div>
-                  </div>
-
-                  {/* IPFS Documents from Seller */}
-                  {(() => {
-                    const allVehicles = getAllVehicles();
-                    const vehicle = allVehicles.find(v => v.id === selectedQueueItem.vehicleId);
-                    const ipfsDocs = vehicle?.ipfsDocuments || {};
-                    const metaCID = vehicle?.metadataCID;
-                    const hasIpfs = Object.keys(ipfsDocs).length > 0;
-                    return (
-                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                          {hasIpfs ? 'IPFS-Pinned Documents' : 'Submitted Documents'}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                  {/* LEFT (6 cols): Seller Uploaded Vehicle Specs & Documents */}
+                  <div className="md:col-span-6 space-y-4 text-xs">
+                    {/* Vehicle Identity & Specs Box */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">Seller Uploaded Specs</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200">
+                          {selectedQueueItem.status}
                         </span>
-                        {hasIpfs ? (
-                          <div className="space-y-1.5">
-                            {Object.entries(ipfsDocs).map(([docType, cid]) => (
-                              <div key={docType} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
-                                <div className="flex items-center gap-2">
-                                  <FileText className="w-3.5 h-3.5 text-teal-600" />
-                                  <span className="font-semibold text-slate-700 text-[11px] capitalize">{docType}</span>
-                                </div>
-                                <a
-                                  href={ipfsUrl(cid)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[10px] font-mono text-blue-700 hover:underline truncate max-w-[120px]"
-                                >
-                                  {cid?.slice(0, 14)}...
-                                </a>
-                              </div>
-                            ))}
-                            {metaCID && (
-                              <div className="flex items-center justify-between pt-1">
-                                <span className="text-[10px] font-bold text-teal-700 uppercase">Metadata CID</span>
-                                <a
-                                  href={ipfsUrl(metaCID)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[10px] font-mono text-blue-700 hover:underline truncate max-w-[120px]"
-                                >
-                                  {metaCID?.slice(0, 14)}...
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="flex items-center space-x-2">
-                            <FileText className="w-4 h-4 text-teal-600" />
-                            <span className="font-semibold text-slate-700 text-xs">Form_23_RC_Book_Scan.pdf</span>
-                          </div>
-                        )}
                       </div>
-                    );
-                  })()}
-                </div>
 
-                {/* RIGHT (7 cols): Verification Checklist & Risk Assessment */}
-                <div className="md:col-span-7 space-y-4">
-                  {/* Checklist */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                    <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
-                      Authority Multi-Checklist
-                    </h4>
+                      <h4 className="font-heading font-bold text-slate-900 text-base">{selectedQueueItem.vehicleName}</h4>
 
-                    <div className="space-y-2 text-xs">
-                      {[
-                        { label: 'Identity & Seller Match', status: selectedQueueItem?.checklist?.identityMatch || 'verified' },
-                        { label: 'Registration Document (RC) Validity', status: selectedQueueItem?.checklist?.registrationDoc || 'verified' },
-                        { label: 'Ownership Chain & Transfer Right', status: selectedQueueItem?.checklist?.ownershipProof || 'verified' },
-                        { label: 'Insurance Policy Sync (IIB Oracle)', status: selectedQueueItem?.checklist?.insurance || 'verified' },
-                        { label: 'Physical Inspection & Telemetry Scan', status: selectedQueueItem?.checklist?.inspection || 'verified' },
-                        { label: 'Hypothecation / Bank Finance Status', status: selectedQueueItem?.checklist?.financeStatus || 'verified' }
-                      ].map((chk, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
-                          <span className="font-medium text-slate-700">{chk.label}</span>
-                          <span className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase ${
-                            chk.status === 'verified'
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                              : chk.status === 'mismatch'
-                              ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                              : 'bg-amber-50 text-amber-800 border border-amber-200'
-                          }`}>
-                            {chk.status}
-                          </span>
+                      <div className="grid grid-cols-2 gap-2 text-[11px] pt-1">
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Make & Model</span>
+                          <strong className="text-slate-800">{selectedQueueItem.make || vehicle.make || '—'} {selectedQueueItem.model || vehicle.model || ''}</strong>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Compact Risk Panel */}
-                  <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-900 font-heading">Vehicle Risk Assessment</span>
-                      <span className="text-xs font-mono font-bold text-emerald-700">Trust Score {selectedQueueItem.riskScore}/100</span>
-                    </div>
-
-                    <div className="space-y-1.5 text-[11px] text-slate-500">
-                      <div className="flex justify-between">
-                        <span>Document Consistency</span>
-                        <strong className="text-slate-800">98% Match</strong>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Year</span>
+                          <strong className="text-slate-800">{selectedQueueItem.year || vehicle.year || '—'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Registration Plate</span>
+                          <strong className="text-slate-800 font-mono">{selectedQueueItem.registrationNo || vehicle.registration || '—'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">VIN / Chassis</span>
+                          <strong className="text-slate-800 font-mono">{selectedQueueItem.vin || vehicle.vin || '—'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Mileage</span>
+                          <strong className="text-slate-800">{selectedQueueItem.mileage || vehicle.mileage || '—'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Fuel & Transmission</span>
+                          <strong className="text-slate-800">{selectedQueueItem.fuelType || vehicle.fuelType || 'Petrol'} / {selectedQueueItem.transmission || vehicle.transmission || 'Manual'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Exterior Color</span>
+                          <strong className="text-slate-800">{selectedQueueItem.color || vehicle.color || '—'}</strong>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                          <span className="text-slate-400 block text-[10px]">Asking Price</span>
+                          <strong className="text-emerald-700 font-bold">{selectedQueueItem.priceInr || vehicle.priceInr || '—'}</strong>
+                        </div>
                       </div>
-                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="w-[98%] h-full bg-emerald-500 rounded-full" />
+
+                      {/* Seller Notes / Description */}
+                      {(selectedQueueItem.description || vehicle.description) && (
+                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 text-[11px]">
+                          <span className="text-slate-400 block text-[10px] mb-0.5 font-semibold">Seller Description</span>
+                          <p className="text-slate-700">{selectedQueueItem.description || vehicle.description}</p>
+                        </div>
+                      )}
+
+                      {/* Seller Wallet Address */}
+                      <div className="p-2.5 rounded-lg bg-slate-900 text-white font-mono text-[11px] space-y-1">
+                        <span className="text-slate-400 block text-[10px]">Seller Wallet (Recipient of Passport NFT)</span>
+                        <div className="flex items-center justify-between">
+                          <span className="truncate pr-2">{sellerAddress || 'Not connected'}</span>
+                          {sellerAddress && (
+                            <a
+                              href={`${ETHERSCAN_BASE}/address/${sellerAddress}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-teal-400 hover:text-teal-300 flex items-center gap-1 shrink-0 text-[10px]"
+                            >
+                              <span>Etherscan</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* IPFS Documents Box */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">
+                          IPFS Uploaded Documents ({Object.keys(ipfsDocs).length}/4)
+                        </span>
+                        <span className="text-[10px] text-teal-700 font-mono font-bold">Pinata Cloud Gateway</span>
                       </div>
 
-                      <div className="flex justify-between pt-1">
-                        <span>Ownership Consistency</span>
-                        <strong className="text-slate-800">100% Match</strong>
-                      </div>
-                      <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="w-[100%] h-full bg-emerald-500 rounded-full" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                      <div className="space-y-2">
+                        {docDefinitions.map((docDef) => {
+                          const cid = ipfsDocs[docDef.key] || (docDef.fallbackKey && ipfsDocs[docDef.fallbackKey]);
+                          return (
+                            <div key={docDef.key} className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <FileText className={`w-4 h-4 shrink-0 ${cid ? 'text-teal-600' : 'text-slate-300'}`} />
+                                <div className="min-w-0">
+                                  <span className="font-semibold text-slate-800 block text-[11px] truncate">{docDef.label}</span>
+                                  {cid ? (
+                                    <span className="text-[10px] font-mono text-slate-500 block truncate">
+                                      CID: {typeof cid === 'string' ? cid : cid.cid || 'Pinned'}
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] text-slate-400 block">Not uploaded</span>
+                                  )}
+                                </div>
+                              </div>
+                              {cid && (
+                                <a
+                                  href={ipfsUrl(typeof cid === 'string' ? cid : cid.cid)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 font-bold text-[10px] flex items-center gap-1 shrink-0 cursor-pointer"
+                                >
+                                  <span>View IPFS</span>
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+                            </div>
+                          );
+                        })}
 
-              {/* Authority Decision Panel */}
-              <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
-                <div className="flex items-start space-x-2">
-                  <input
-                    type="checkbox"
-                    id="confirmReview"
-                    checked={confirmedCheck}
-                    onChange={(e) => setConfirmedCheck(e.target.checked)}
-                    className="mt-1 rounded text-teal-600 focus:ring-teal-500 cursor-pointer"
-                  />
-                  <label htmlFor="confirmReview" className="text-xs text-slate-700 font-medium cursor-pointer">
-                    “Confirm vehicle and document information has been reviewed against regional VAHAN / RTO registries.”
-                  </label>
-                </div>
-
-                {verifyError && (
-                  <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
-                    <div>
-                      <strong className="block font-bold">Verification Error</strong>
-                      <span>{verifyError}</span>
-                    </div>
-                  </div>
-                )}
-
-                {verifyTxHash ? (
-                  <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2 font-mono text-xs">
-                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
-                      <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                      <span>Vehicle Verified & NFT Minted on Sepolia!</span>
-                    </div>
-                    <p className="text-emerald-700 font-sans text-xs">
-                      Official RTO title seal approved and Vehicle Passport NFT minted directly to the seller's wallet (<span className="font-mono font-bold">{selectedQueueItem.ownerAddress ? selectedQueueItem.ownerAddress.slice(0, 10) + '...' : 'Seller Wallet'}</span>). The seller can now list this vehicle on the marketplace.
-                    </p>
-                    <div className="p-2.5 bg-white rounded-lg border border-emerald-200 flex items-center justify-between gap-2">
-                      <span className="text-slate-800 break-all text-[11px] font-bold">{verifyTxHash}</span>
-                      <a
-                        href={`${ETHERSCAN_BASE}/tx/${verifyTxHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-teal-700 hover:text-teal-900 font-bold shrink-0 text-xs underline"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Etherscan</span>
-                      </a>
-                    </div>
-                    <div className="pt-2 flex justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setReviewModalOpen(false);
-                          setVerifyTxHash(null);
-                        }}
-                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
-                      >
-                        Close & Refresh Queue
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {isVerifying ? 'Minting NFT to Seller on Sepolia...' : 'Approval will mint NFT directly to seller wallet'}
-                    </span>
-
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={() => handleDecision('reject')}
-                        disabled={isVerifying}
-                        className="px-4 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold cursor-pointer disabled:opacity-50"
-                      >
-                        Reject
-                      </button>
-                      <button
-                        onClick={() => handleDecision('correction')}
-                        disabled={isVerifying}
-                        className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold cursor-pointer disabled:opacity-50"
-                      >
-                        Request Correction
-                      </button>
-                      <button
-                        onClick={() => handleDecision('approve')}
-                        disabled={isVerifying}
-                        className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-60"
-                      >
-                        {isVerifying ? (
-                          <span>Minting on Sepolia...</span>
-                        ) : (
-                          <>
-                            <ShieldCheck className="w-4 h-4" />
-                            <span>Approve & Mint NFT to Seller</span>
-                          </>
+                        {metaCID && (
+                          <div className="p-2.5 rounded-xl bg-teal-50/50 border border-teal-100 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Cpu className="w-4 h-4 text-teal-700 shrink-0" />
+                              <div className="min-w-0">
+                                <span className="font-bold text-teal-900 block text-[11px]">Vehicle Metadata JSON</span>
+                                <span className="text-[10px] font-mono text-teal-700 block truncate">CID: {metaCID}</span>
+                              </div>
+                            </div>
+                            <a
+                              href={ipfsUrl(metaCID)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 rounded-lg bg-teal-700 text-white hover:bg-teal-800 font-bold text-[10px] flex items-center gap-1 shrink-0 cursor-pointer"
+                            >
+                              <span>View JSON</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
                         )}
-                      </button>
+                      </div>
                     </div>
                   </div>
-                )}
+
+                  {/* RIGHT (6 cols): Verification Checklist & Decision Panel */}
+                  <div className="md:col-span-6 space-y-4">
+                    {/* Checklist */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                      <h4 className="text-xs font-mono uppercase font-bold text-slate-400 tracking-wider">
+                        Official RTO Verification Multi-Check
+                      </h4>
+
+                      <div className="space-y-2">
+                        {[
+                          { label: 'Owner Identity & Wallet Match', status: 'verified' },
+                          { label: 'Registration Document (RC / Title Deed)', status: 'verified' },
+                          { label: 'Active Insurance Oracle Synchronization', status: 'verified' },
+                          { label: 'Physical Inspection & Chassis Integrity', status: 'verified' },
+                          { label: 'Hypothecation / Bank Finance Freedom', status: 'verified' },
+                          { label: 'Decentralized IPFS Cryptographic Hashes', status: 'verified' }
+                        ].map((chk, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 border border-slate-100">
+                            <span className="font-medium text-slate-700">{chk.label}</span>
+                            <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold uppercase bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                              <Check className="w-3 h-3 text-emerald-600" />
+                              <span>{chk.status}</span>
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Risk Panel */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-slate-900 font-heading">Authority Risk Rating</span>
+                        <span className="text-xs font-mono font-bold text-emerald-700">Trust Score {selectedQueueItem.riskScore || 96}/100</span>
+                      </div>
+
+                      <div className="space-y-1.5 text-[11px] text-slate-500">
+                        <div className="flex justify-between">
+                          <span>Document Authenticity</span>
+                          <strong className="text-slate-800">100% Cryptographic Match</strong>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="w-[100%] h-full bg-emerald-500 rounded-full" />
+                        </div>
+
+                        <div className="flex justify-between pt-1">
+                          <span>Owner Wallet Right-to-Sell</span>
+                          <strong className="text-slate-800">100% Verified</strong>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div className="w-[100%] h-full bg-emerald-500 rounded-full" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Authority Decision Panel */}
+                    <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs">
+                      <div className="flex items-start space-x-2">
+                        <input
+                          type="checkbox"
+                          id="confirmReview"
+                          checked={confirmedCheck}
+                          onChange={(e) => setConfirmedCheck(e.target.checked)}
+                          className="mt-1 rounded text-teal-600 focus:ring-teal-500 cursor-pointer"
+                        />
+                        <label htmlFor="confirmReview" className="text-xs text-slate-700 font-medium cursor-pointer leading-snug">
+                          “I confirm this vehicle's specifications, serial numbers, and IPFS documents have been verified against official transport databases for on-chain passport issuance.”
+                        </label>
+                      </div>
+
+                      {verifyError && (
+                        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+                          <div>
+                            <strong className="block font-bold">Verification Error</strong>
+                            <span>{verifyError}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {verifyTxHash ? (
+                        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2 font-mono text-xs">
+                          <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                            <span>Vehicle Verified & NFT Minted on Sepolia!</span>
+                          </div>
+                          <p className="text-emerald-700 font-sans text-xs">
+                            Official RTO title seal approved and Vehicle Passport NFT minted directly into the seller's wallet (<span className="font-mono font-bold">{sellerAddress ? `${sellerAddress.slice(0, 10)}...` : 'Seller'}</span>). The seller can now list this vehicle on the marketplace.
+                          </p>
+                          <div className="p-2.5 bg-white rounded-lg border border-emerald-200 flex items-center justify-between gap-2">
+                            <span className="text-slate-800 break-all text-[11px] font-bold">{verifyTxHash}</span>
+                            <a
+                              href={`${ETHERSCAN_BASE}/tx/${verifyTxHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-teal-700 hover:text-teal-900 font-bold shrink-0 text-xs underline"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              <span>Etherscan</span>
+                            </a>
+                          </div>
+                          <div className="pt-2 flex justify-end">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setReviewModalOpen(false);
+                                setVerifyTxHash(null);
+                              }}
+                              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+                            >
+                              Close & Refresh Queue
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
+                          <span className="text-[11px] font-mono text-slate-400">
+                            {isVerifying ? 'Minting NFT to Seller on Sepolia...' : 'Mints NFT directly to seller wallet'}
+                          </span>
+
+                          <div className="flex items-center space-x-3">
+                            <button
+                              onClick={() => handleDecision('reject')}
+                              disabled={isVerifying}
+                              className="px-4 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold cursor-pointer disabled:opacity-50"
+                            >
+                              Reject
+                            </button>
+                            <button
+                              onClick={() => handleDecision('approve')}
+                              disabled={isVerifying}
+                              className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-60"
+                            >
+                              {isVerifying ? (
+                                <span>Minting on Sepolia...</span>
+                              ) : (
+                                <>
+                                  <ShieldCheck className="w-4 h-4" />
+                                  <span>Approve & Mint NFT to Seller</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
-
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ==========================================================
           3. VEHICLE REGISTRY VIEW
       ========================================================== */}
-      {activeTab === 'registry' && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
-            <h2 className="text-xl font-heading font-extrabold text-slate-900">
-              Verified Vehicle Registry
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-              <div className="sm:col-span-8 relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
-                <input
-                  type="text"
-                  value={registrySearch}
-                  onChange={(e) => setRegistrySearch(e.target.value)}
-                  placeholder="Search by Vehicle ID, Registration Plate, or Owner..."
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-teal-600 focus:bg-white font-mono"
-                />
-              </div>
-              <div className="sm:col-span-4">
-                <select
-                  value={registryFilter}
-                  onChange={(e) => setRegistryFilter(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold cursor-pointer"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="verified">Verified Only</option>
-                  <option value="pending">Pending Approval</option>
-                </select>
+      {activeTab === 'registry' && (() => {
+        const allVehicles = getAllVehicles();
+        const registryVehicles = allVehicles.filter(v => {
+          const isVerified = v.verificationStatus === 'Verified' || v.mintStatus === 'Minted' || v.mintStatus === 'Minted in Seller Wallet';
+          if (registryFilter === 'verified') return isVerified;
+          if (registryFilter === 'pending') return !isVerified;
+          return true;
+        }).filter(v => {
+          if (!registrySearch) return true;
+          const q = registrySearch.toLowerCase();
+          return (v.model && v.model.toLowerCase().includes(q)) ||
+                 (v.name && v.name.toLowerCase().includes(q)) ||
+                 (v.id && v.id.toLowerCase().includes(q)) ||
+                 (v.registration && v.registration.toLowerCase().includes(q)) ||
+                 (v.vin && v.vin.toLowerCase().includes(q));
+        });
+
+        return (
+          <div className="space-y-6">
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+              <h2 className="text-xl font-heading font-extrabold text-slate-900">
+                Verified Vehicle Registry ({registryVehicles.length})
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                <div className="sm:col-span-8 relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    value={registrySearch}
+                    onChange={(e) => setRegistrySearch(e.target.value)}
+                    placeholder="Search by Vehicle ID, Registration Plate, or Model..."
+                    className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:border-teal-600 focus:bg-white font-mono"
+                  />
+                </div>
+                <div className="sm:col-span-4">
+                  <select
+                    value={registryFilter}
+                    onChange={(e) => setRegistryFilter(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-semibold cursor-pointer"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="verified">Verified Only</option>
+                    <option value="pending">Pending Approval</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px]">
-                <tr>
-                  <th className="py-4 px-6">Vehicle Asset</th>
-                  <th className="py-4 px-4">Registration</th>
-                  <th className="py-4 px-4">Current Owner</th>
-                  <th className="py-4 px-4">Blockchain Record</th>
-                  <th className="py-4 px-6 text-right">Passport</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {VEHICLES.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50/70">
-                    <td className="py-4 px-6 font-bold text-slate-900">{v.model}</td>
-                    <td className="py-4 px-4 font-mono text-slate-700">{v.id}</td>
-                    <td className="py-4 px-4 text-slate-700">Vikram Singhania</td>
-                    <td className="py-4 px-4 font-mono text-teal-700">Sepolia: 0x89a...4f92</td>
-                    <td className="py-4 px-6 text-right">
-                      <button
-                        onClick={() => onOpenPassport(v)}
-                        className="px-3 py-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 font-semibold cursor-pointer"
-                      >
-                        Inspect
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden">
+              {registryVehicles.length === 0 ? (
+                <div className="text-center py-12 px-4 text-xs text-slate-400 space-y-2">
+                  <p className="font-bold text-slate-700">No vehicles matching this filter.</p>
+                  <p>When seller vehicles are verified by Authority, they will be cataloged in this registry.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-400 font-mono uppercase text-[10px]">
+                    <tr>
+                      <th className="py-4 px-6">Vehicle Asset</th>
+                      <th className="py-4 px-4">Registration</th>
+                      <th className="py-4 px-4">Seller / Owner</th>
+                      <th className="py-4 px-4">Blockchain Status</th>
+                      <th className="py-4 px-6 text-right">Passport</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {registryVehicles.map((v) => (
+                      <tr key={v.id} className="hover:bg-slate-50/70">
+                        <td className="py-4 px-6">
+                          <span className="font-bold text-slate-900 block">{v.model || v.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">{v.id}</span>
+                        </td>
+                        <td className="py-4 px-4 font-mono text-slate-700">{v.registration || v.vin || '—'}</td>
+                        <td className="py-4 px-4 text-slate-700 font-mono">
+                          {v.ownerAddress ? `${v.ownerAddress.slice(0, 6)}...${v.ownerAddress.slice(-4)}` : (v.ownerName || 'Seller')}
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+                            v.verificationStatus === 'Verified' || v.mintStatus === 'Minted' || v.mintStatus === 'Minted in Seller Wallet'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-800 border border-amber-200'
+                          }`}>
+                            {v.verificationStatus || 'Pending'}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            onClick={() => onOpenPassport(v)}
+                            className="px-3 py-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 font-semibold cursor-pointer"
+                          >
+                            Inspect
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ==========================================================
-          4. OWNERSHIP TRANSFERS & AUDIT TRAIL
+          4. OWNERSHIP TRANSFERS
       ========================================================== */}
       {(activeTab === 'transfers' || activeTab === 'pending-approvals') && (
         <div className="space-y-6">
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
             <h2 className="text-xl font-heading font-extrabold text-slate-900">
-              Ownership Transfer Requests ({MOCK_AUTHORITY_DATA.transferRequests.length})
+              Ownership Transfer Requests (0)
             </h2>
             <p className="text-xs text-slate-500">
-              Verify smart escrow locking and digitally approve title transfer between parties.
+              Verify smart escrow locking and digitally approve title transfer between parties on Ethereum Sepolia.
             </p>
           </div>
 
-          <div className="space-y-4">
-            {MOCK_AUTHORITY_DATA.transferRequests.map((tr) => (
-              <div key={tr.id} className="bg-white p-6 rounded-3xl border border-slate-200 shadow-xs space-y-4">
-                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
-                  <div>
-                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">Transfer ID: {tr.id}</span>
-                    <h3 className="text-base font-bold font-heading text-slate-900">{tr.vehicleName}</h3>
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-mono font-bold">
-                    {tr.status}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50">
-                    <span className="text-slate-400 block text-[10px]">Seller</span>
-                    <strong>{tr.currentOwner}</strong>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50">
-                    <span className="text-slate-400 block text-[10px]">Buyer</span>
-                    <strong>{tr.newOwner}</strong>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50">
-                    <span className="text-slate-400 block text-[10px]">Escrow Amount</span>
-                    <strong className="text-teal-800">{tr.escrowAmount}</strong>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50">
-                    <span className="text-slate-400 block text-[10px]">Tax & Title Status</span>
-                    <strong className="text-emerald-700">{tr.taxPaidStatus}</strong>
-                  </div>
-                </div>
-
-                {/* Audit Timeline */}
-                <div className="pt-2 flex justify-end space-x-3">
-                  <button
-                    onClick={() => alert("Digital Title Transfer Signed by Authority Node #409 on Ethereum Sepolia!")}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs flex items-center space-x-1.5 cursor-pointer shadow-xs"
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>Authorize Ownership Transfer</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-12 text-center shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center mx-auto">
+              <ArrowRightLeft className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-heading font-bold text-slate-900">No Pending Ownership Transfers</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              When a buyer purchases a verified vehicle via smart escrow, transfer requests awaiting RTO authorization will appear here.
+            </p>
           </div>
         </div>
       )}
@@ -829,34 +922,21 @@ export default function AuthorityDashboardView({
         <div className="space-y-6">
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs">
             <h2 className="text-xl font-heading font-extrabold text-slate-900">
-              Active Risk Alerts ({MOCK_AUTHORITY_DATA.riskAlerts.length})
+              Active Risk Alerts (0)
             </h2>
             <p className="text-xs text-slate-500">
-              Anomalies detected in submitted serial numbers, hypothecation status, or insurance validity.
+              Real-time anomaly monitoring across serial numbers, hypothecation status, and insurance validity.
             </p>
           </div>
 
-          <div className="space-y-3">
-            {MOCK_AUTHORITY_DATA.riskAlerts.map((alt) => (
-              <div key={alt.id} className="p-5 rounded-2xl bg-white border border-rose-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-mono font-bold uppercase">
-                      {alt.severity} Severity
-                    </span>
-                    <span className="font-bold text-slate-900 text-xs">{alt.vehicle}</span>
-                  </div>
-                  <p className="text-xs text-slate-600">{alt.issue}</p>
-                  <p className="text-[10px] font-mono text-slate-400">{alt.date}</p>
-                </div>
-                <button
-                  onClick={() => alert(`Action initialized: ${alt.action}`)}
-                  className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-rose-700 text-white font-bold text-xs transition-all cursor-pointer whitespace-nowrap"
-                >
-                  {alt.action}
-                </button>
-              </div>
-            ))}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-12 text-center shadow-xs space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center mx-auto">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-base font-heading font-bold text-slate-900">All Systems Normal — Zero Active Risk Alerts</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              No chassis collisions, title discrepancies, or lien conflicts detected across registered vehicle assets.
+            </p>
           </div>
         </div>
       )}
@@ -865,40 +945,46 @@ export default function AuthorityDashboardView({
         <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-6">
           <div>
             <h2 className="text-xl font-heading font-extrabold text-slate-900">
-              Immutable Authority Audit Trail
+              Immutable Authority Audit Trail ({auditTrail.length})
             </h2>
             <p className="text-xs text-slate-500">
               Cryptographic transaction logs signed by certified authority oracle nodes on Ethereum Sepolia.
             </p>
           </div>
 
-          <div className="space-y-3 font-mono text-xs">
-            {auditTrail.map((log) => (
-              <div key={log.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div>
-                    <span className="font-bold text-slate-900 block font-sans">{log.action}: {log.vehicle}</span>
-                    <span className="text-[11px] text-slate-500">Operator: {log.operator} • {log.date}</span>
+          {auditTrail.length === 0 ? (
+            <div className="text-center py-12 text-xs text-slate-400 bg-slate-50 rounded-2xl border border-slate-200">
+              No on-chain audit logs yet. As vehicles are verified and minted on Sepolia, records will appear here.
+            </div>
+          ) : (
+            <div className="space-y-3 font-mono text-xs">
+              {auditTrail.map((log) => (
+                <div key={log.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="font-bold text-slate-900 block font-sans">{log.action}: {log.vehicle}</span>
+                      <span className="text-[11px] text-slate-500">Operator: {log.operator} • {log.date}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-emerald-700">✓ {log.status}</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] text-emerald-700">✓ {log.status}</span>
+                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
+                    <span className="text-teal-700 font-bold text-[10px] break-all pr-2">{log.txHash}</span>
+                    <a
+                      href={`${ETHERSCAN_BASE}/tx/${log.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-[10px] font-bold text-teal-600 hover:text-teal-900 shrink-0 transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      Etherscan
+                    </a>
                   </div>
                 </div>
-                <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
-                  <span className="text-teal-700 font-bold text-[10px] break-all pr-2">{log.txHash}</span>
-                  <a
-                    href={`${ETHERSCAN_BASE}/tx/${log.txHash}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-[10px] font-bold text-teal-600 hover:text-teal-900 shrink-0 transition-colors"
-                  >
-                    <ExternalLink className="w-3 h-3" />
-                    Etherscan
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

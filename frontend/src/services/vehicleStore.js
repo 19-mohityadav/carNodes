@@ -1,9 +1,54 @@
-import { VEHICLES } from '../data/vehicles';
-import { MOCK_AUTHORITY_DATA } from '../data/dashboardData';
-
 const CUSTOM_VEHICLES_KEY = 'carnodes_custom_vehicles';
 const QUEUE_KEY = 'carnodes_verification_queue';
 const AUDIT_TRAIL_KEY = 'carnodes_authority_audit_trail';
+
+// Helper to sanitize and remove old mock data from localStorage
+function sanitizeStorage() {
+  if (typeof window === 'undefined') return;
+  try {
+    // Clean custom vehicles of legacy mock IDs
+    const storedVehicles = localStorage.getItem(CUSTOM_VEHICLES_KEY);
+    if (storedVehicles) {
+      const parsed = JSON.parse(storedVehicles);
+      const filtered = parsed.filter(v => 
+        v && v.id && 
+        !['CN-48291', 'CN-77310', 'CN-10294', 'CN-33921', 'CN-55102', 'CN-88219'].includes(v.id)
+      );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(CUSTOM_VEHICLES_KEY, JSON.stringify(filtered));
+      }
+    }
+
+    // Clean verification queue of legacy mock IDs
+    const storedQueue = localStorage.getItem(QUEUE_KEY);
+    if (storedQueue) {
+      const parsed = JSON.parse(storedQueue);
+      const filtered = parsed.filter(q => 
+        q && q.id && 
+        !['VQ-01', 'VQ-02', 'VQ-03', 'VQ-04', 'VQ-05', 'VQ-CN-48291', 'VQ-CN-77310'].includes(q.id)
+      );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(filtered));
+      }
+    }
+
+    // Clean audit trail of legacy mock IDs
+    const storedAudit = localStorage.getItem(AUDIT_TRAIL_KEY);
+    if (storedAudit) {
+      const parsed = JSON.parse(storedAudit);
+      const filtered = parsed.filter(a => 
+        a && a.id && !['LOG-89102', 'LOG-89101', 'LOG-89100', 'LOG-89099'].includes(a.id)
+      );
+      if (filtered.length !== parsed.length) {
+        localStorage.setItem(AUDIT_TRAIL_KEY, JSON.stringify(filtered));
+      }
+    }
+  } catch (e) {
+    console.warn('Error sanitizing storage:', e);
+  }
+}
+
+sanitizeStorage();
 
 // Multi-tab sync channel
 let syncChannel = null;
@@ -28,16 +73,15 @@ export function broadcastEvent(eventName, detail) {
 }
 
 /**
- * Get all vehicles (baseline + custom user created from seller)
+ * Get all vehicles (strictly real user uploads from seller)
  */
 export function getAllVehicles() {
   try {
     const custom = JSON.parse(localStorage.getItem(CUSTOM_VEHICLES_KEY) || '[]');
-    const customIds = new Set(custom.map(v => v.id));
-    return [...custom, ...VEHICLES.filter(v => !customIds.has(v.id))];
+    return Array.isArray(custom) ? custom : [];
   } catch (err) {
-    console.warn('Error reading custom vehicles from localStorage:', err);
-    return VEHICLES;
+    console.warn('Error reading vehicles from localStorage:', err);
+    return [];
   }
 }
 
@@ -50,25 +94,35 @@ export function addCustomVehicle(newCar) {
     const updated = [newCar, ...existing.filter(c => c.id !== newCar.id)];
     localStorage.setItem(CUSTOM_VEHICLES_KEY, JSON.stringify(updated));
 
-    // Also automatically build queue item for Authority verification
+    // Build comprehensive queue item for Authority verification
     const queueItem = {
       id: `VQ-${newCar.id}`,
       vehicleId: newCar.id,
-      vehicleName: newCar.name || `${newCar.year} ${newCar.make} ${newCar.model}`,
+      vehicleName: newCar.name || `${newCar.year || ''} ${newCar.make || ''} ${newCar.model || ''}`.trim() || 'Custom Vehicle',
+      make: newCar.make || '',
+      model: newCar.model || newCar.modelName || '',
+      year: newCar.year || '',
       vin: newCar.vin || newCar.registration || `VIN-${newCar.id}`,
-      registrationNo: newCar.registration || 'MH 02 ER ' + String(newCar.id).slice(-4),
-      ownerName: newCar.ownerName || (newCar.ownerAddress ? `${newCar.ownerAddress.slice(0, 6)}...${newCar.ownerAddress.slice(-4)}` : 'Seller (Current User)'),
+      registrationNo: newCar.registration || newCar.vin || `MH 02 ER ${String(newCar.id).slice(-4)}`,
+      mileage: newCar.mileage || '',
+      color: newCar.color || '',
+      fuelType: newCar.fuelType || 'Petrol',
+      transmission: newCar.transmission || 'Manual',
+      priceInr: newCar.priceInr || '',
+      priceEth: newCar.priceEth || '0.05',
+      description: newCar.description || '',
+      ownerName: newCar.ownerName || (newCar.ownerAddress ? `${newCar.ownerAddress.slice(0, 6)}...${newCar.ownerAddress.slice(-4)}` : 'Seller'),
       ownerType: 'Individual Seller',
+      ownerAddress: newCar.ownerAddress || '',
       verificationType: 'Vehicle Documents + IPFS Cryptographic Hash',
-      submittedDate: 'Just now',
+      submittedDate: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) + ' (Just now)',
       risk: newCar.riskStatus || 'LOW',
-      riskScore: newCar.trustScore || 95,
+      riskScore: newCar.trustScore || 96,
       status: 'Pending',
       documentsCount: newCar.ipfsDocuments ? Object.keys(newCar.ipfsDocuments).length : 4,
       ipfsDocuments: newCar.ipfsDocuments || {},
       metadataCID: newCar.metadataCID || null,
       txHash: newCar.txHash || null,
-      ownerAddress: newCar.ownerAddress || '',
       checklist: {
         identityMatch: 'verified',
         registrationDoc: 'verified',
@@ -84,7 +138,7 @@ export function addCustomVehicle(newCar) {
     broadcastEvent('carnodes_queue_updated', getVerificationQueue());
     return newCar;
   } catch (err) {
-    console.error('Failed to add custom vehicle:', err);
+    console.error('Failed to add vehicle:', err);
     return newCar;
   }
 }
@@ -101,8 +155,7 @@ export function updateVehicle(vehicleId, updates) {
       existing[targetIdx] = { ...existing[targetIdx], ...updates };
       updated = existing;
     } else {
-      const base = VEHICLES.find(v => v.id === vehicleId) || { id: vehicleId };
-      updated = [{ ...base, ...updates }, ...existing];
+      updated = [{ id: vehicleId, ...updates }, ...existing];
     }
     localStorage.setItem(CUSTOM_VEHICLES_KEY, JSON.stringify(updated));
 
@@ -129,8 +182,7 @@ export function updateVehicle(vehicleId, updates) {
 }
 
 /**
- * Get Authority Verification Queue
- * Dynamically guarantees all seller-uploaded vehicles are present at the top
+ * Get Authority Verification Queue (Strictly real uploaded seller vehicles)
  */
 export function getVerificationQueue() {
   try {
@@ -142,28 +194,16 @@ export function getVerificationQueue() {
     }
 
     const allVehicles = getAllVehicles();
-    
-    // Find all custom vehicles uploaded by sellers
-    const customVehicles = allVehicles.filter(v => 
-      v.ipfsDocuments || 
-      v.metadataCID || 
-      v.verificationStatus === 'Under RTO Review' || 
-      v.verificationStatus === 'Pending' || 
-      v.verificationStatus === 'Pending Verification' || 
-      v.listingStatus === 'Pending Verification' || 
-      v.listingStatus === 'Ready to List' || 
-      v.ownerAddress
-    );
-
     const queueMap = new Map();
+
     // Index existing stored queue items
     storedQueue.forEach(item => {
       const key = item.vehicleId || item.id;
       queueMap.set(key, item);
     });
 
-    // Make sure EVERY custom vehicle from seller is in the queue
-    customVehicles.forEach(v => {
+    // Make sure EVERY real uploaded vehicle from seller is present in the queue with full details
+    allVehicles.forEach(v => {
       const key = v.id;
       const existing = queueMap.get(key) || queueMap.get(`VQ-${key}`);
       const isVerified = v.verificationStatus === 'Verified' || v.mintStatus === 'Minted' || v.mintStatus === 'Minted in Seller Wallet';
@@ -171,21 +211,31 @@ export function getVerificationQueue() {
       const item = {
         id: existing?.id || `VQ-${v.id}`,
         vehicleId: v.id,
-        vehicleName: v.name || `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim() || 'Custom Vehicle',
-        vin: v.vin || v.registration || `VIN-${v.id}`,
-        registrationNo: v.registration || v.vin || 'MH 02 ER ' + String(v.id).slice(-4),
-        ownerName: v.ownerName || (v.ownerAddress ? `${v.ownerAddress.slice(0, 6)}...${v.ownerAddress.slice(-4)}` : 'Seller (Current User)'),
+        vehicleName: v.name || `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim() || 'Vehicle Asset',
+        make: v.make || existing?.make || '',
+        model: v.model || v.modelName || existing?.model || '',
+        year: v.year || existing?.year || '',
+        vin: v.vin || v.registration || existing?.vin || `VIN-${v.id}`,
+        registrationNo: v.registration || v.vin || existing?.registrationNo || `MH 02 ER ${String(v.id).slice(-4)}`,
+        mileage: v.mileage || existing?.mileage || '',
+        color: v.color || existing?.color || '',
+        fuelType: v.fuelType || existing?.fuelType || 'Petrol',
+        transmission: v.transmission || existing?.transmission || 'Manual',
+        priceInr: v.priceInr || existing?.priceInr || '',
+        priceEth: v.priceEth || existing?.priceEth || '0.05',
+        description: v.description || existing?.description || '',
+        ownerName: v.ownerName || existing?.ownerName || (v.ownerAddress ? `${v.ownerAddress.slice(0, 6)}...${v.ownerAddress.slice(-4)}` : 'Seller'),
         ownerType: 'Individual Seller',
+        ownerAddress: v.ownerAddress || existing?.ownerAddress || '',
         verificationType: 'Vehicle Documents + IPFS Cryptographic Hash',
         submittedDate: existing?.submittedDate || 'Recently Uploaded',
-        risk: v.riskStatus || 'LOW',
-        riskScore: v.trustScore || 96,
+        risk: v.riskStatus || existing?.risk || 'LOW',
+        riskScore: v.trustScore || existing?.riskScore || 96,
         status: isVerified ? 'Verified' : (existing?.status || 'Pending'),
-        documentsCount: v.ipfsDocuments ? Object.keys(v.ipfsDocuments).length : 4,
+        documentsCount: v.ipfsDocuments ? Object.keys(v.ipfsDocuments).length : (existing?.documentsCount || 4),
         ipfsDocuments: v.ipfsDocuments || existing?.ipfsDocuments || {},
         metadataCID: v.metadataCID || existing?.metadataCID || null,
         txHash: v.txHash || existing?.txHash || null,
-        ownerAddress: v.ownerAddress || existing?.ownerAddress || '',
         checklist: existing?.checklist || {
           identityMatch: 'verified',
           registrationDoc: 'verified',
@@ -198,16 +248,8 @@ export function getVerificationQueue() {
       queueMap.set(key, item);
     });
 
-    // Merge baseline mock items if not already present
-    MOCK_AUTHORITY_DATA.verificationQueue.forEach(mockItem => {
-      const key = mockItem.vehicleId || mockItem.id;
-      if (!queueMap.has(key) && !queueMap.has(mockItem.id)) {
-        queueMap.set(key, mockItem);
-      }
-    });
-
     const result = Array.from(queueMap.values());
-    // Sort: Pending first, custom vehicles first
+    // Sort: Pending first
     result.sort((a, b) => {
       if (a.status === 'Pending' && b.status !== 'Pending') return -1;
       if (b.status === 'Pending' && a.status !== 'Pending') return 1;
@@ -217,7 +259,7 @@ export function getVerificationQueue() {
     return result;
   } catch (err) {
     console.warn('Error reading verification queue:', err);
-    return MOCK_AUTHORITY_DATA.verificationQueue;
+    return [];
   }
 }
 
@@ -256,17 +298,18 @@ export function updateQueueItemStatus(itemId, newStatus, txHash = null) {
 }
 
 /**
- * Get Authority Audit Trail
+ * Get Authority Audit Trail (strictly real entries)
  */
 export function getAuthorityAuditTrail() {
   try {
     const stored = localStorage.getItem(AUDIT_TRAIL_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed) ? parsed : [];
     }
-    return MOCK_AUTHORITY_DATA.auditTrail;
+    return [];
   } catch (err) {
-    return MOCK_AUTHORITY_DATA.auditTrail;
+    return [];
   }
 }
 

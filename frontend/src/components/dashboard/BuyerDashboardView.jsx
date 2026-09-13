@@ -31,8 +31,6 @@ import {
   AlertCircle
 } from 'lucide-react';
 import GlobalVehicleCard from './GlobalVehicleCard';
-import { VEHICLES } from '../../data/vehicles';
-import { MOCK_BUYER_DATA } from '../../data/dashboardData';
 import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../../contracts/addresses';
 import { useWallet } from '../../context/WalletContext';
 import { initiateBuyerEscrow } from '../../services/blockchainService';
@@ -47,19 +45,19 @@ export default function BuyerDashboardView({
 }) {
   const { signer, account, connect } = useWallet();
   const [vehiclesData, setVehiclesData] = useState(() => getAllVehicles());
-  const [selectedVehicle, setSelectedVehicle] = useState(() => getAllVehicles()[0] || VEHICLES[0]);
+  const [selectedVehicle, setSelectedVehicle] = useState(() => getAllVehicles()[0] || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedSort, setSelectedSort] = useState('recommended');
   const [selectedRisk, setSelectedRisk] = useState('all');
-  const [savedVehicles, setSavedVehicles] = useState(MOCK_BUYER_DATA.savedVehicleIds);
+  const [savedVehicles, setSavedVehicles] = useState([]);
 
   // Escrow purchase state
   const [isEscrowing, setIsEscrowing] = useState(false);
   const [escrowTxHash, setEscrowTxHash] = useState(null);
   const [escrowError, setEscrowError] = useState(null);
   const [escrowStage, setEscrowStage] = useState(3);
-  const [txList, setTxList] = useState(MOCK_BUYER_DATA.transactionsHistory);
+  const [txList, setTxList] = useState([]);
 
   // Reactively listen for new vehicles with cross-tab support & polling
   React.useEffect(() => {
@@ -168,10 +166,10 @@ export default function BuyerDashboardView({
             <div className="space-y-2 max-w-2xl">
             
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
-                Good morning, {MOCK_BUYER_DATA.name}
+                Welcome, {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Buyer'}
               </h1>
               <h2 className="text-lg font-heading font-bold text-teal-900">
-                Find a verified vehicle.
+                Find a verified vehicle on Ethereum Sepolia.
               </h2>
               
             </div>
@@ -196,12 +194,14 @@ export default function BuyerDashboardView({
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Card 1 */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-semibold text-slate-500 block">Verified Vehicles Viewed</span>
+                <span className="text-xs font-semibold text-slate-500 block">Available on Marketplace</span>
                 <div className="mt-2 flex items-baseline justify-between">
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
-                    {MOCK_BUYER_DATA.stats.verifiedViewed}
+                    {vehiclesData.filter(v => v.listingStatus === 'Listed on Marketplace').length}
                   </span>
-                  
+                  <button onClick={() => onSelectTab('explore')} className="text-xs text-teal-700 hover:underline font-semibold cursor-pointer">
+                    Browse
+                  </button>
                 </div>
               </div>
 
@@ -220,23 +220,23 @@ export default function BuyerDashboardView({
 
               {/* Card 3 */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-semibold text-slate-500 block">Active Transactions</span>
+                <span className="text-xs font-semibold text-slate-500 block">Active Escrow Deposits</span>
                 <div className="mt-2 flex items-baseline justify-between">
                   <span className="text-3xl font-heading font-extrabold text-slate-900">
-                    {MOCK_BUYER_DATA.stats.activeTransactions}
+                    {txList.length}
                   </span>
-                  <span className="text-[11px] font-mono text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-bold">
-                    Escrow Stage 3
+                  <span className="text-[11px] font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded font-bold">
+                    {txList.length > 0 ? 'In Escrow' : 'Ready'}
                   </span>
                 </div>
               </div>
 
               {/* Card 4 */}
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span className="text-xs font-semibold text-slate-500 block">Trust Status</span>
+                <span className="text-xs font-semibold text-slate-500 block">Network & Trust</span>
                 <div className="mt-2 flex items-center justify-between">
-                  <span className="text-xl font-heading font-extrabold text-teal-800">
-                    {MOCK_BUYER_DATA.stats.trustStatus}
+                  <span className="text-sm font-heading font-extrabold text-teal-800">
+                    Ethereum Sepolia
                   </span>
                   <div className="w-7 h-7 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600">
                     <CheckCircle2 className="w-4 h-4" />
@@ -252,86 +252,108 @@ export default function BuyerDashboardView({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                
+                <h3 className="text-base font-heading font-bold text-slate-900">Live Marketplace Listings</h3>
                 <p className="text-xs text-slate-500">
-                  Hand-picked luxury & performance vehicles with complete RTO and on-chain verification stamps.
+                  Seller vehicles verified by Authority and minted as on-chain passports on Ethereum Sepolia.
                 </p>
               </div>
               <button
                 onClick={() => onSelectTab('explore')}
                 className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center space-x-1 cursor-pointer"
               >
-                <span>View All Vehicles</span>
+                <span>View All Listings</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {VEHICLES.slice(0, 3).map((car) => (
-                <GlobalVehicleCard
-                  key={car.id}
-                  vehicle={car}
-                  role="buyer"
-                  onViewVehicle={(v) => {
-                    setSelectedVehicle(v);
-                    onSelectTab('vehicle-detail');
-                  }}
-                  onViewPassport={(v) => onOpenPassport(v)}
-                />
-              ))}
-            </div>
+            {(() => {
+              const liveCars = vehiclesData.filter(v => v.listingStatus === 'Listed on Marketplace');
+              if (liveCars.length === 0) {
+                return (
+                  <div className="text-center py-12 px-4 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-2">
+                    <p className="font-bold text-slate-800 text-sm">No vehicles currently listed on the marketplace.</p>
+                    <p className="text-xs text-slate-500">
+                      When sellers upload vehicles and Authority approves & mints their NFTs, they will appear here once listed.
+                    </p>
+                  </div>
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {liveCars.slice(0, 3).map((car) => (
+                    <GlobalVehicleCard
+                      key={car.id}
+                      vehicle={car}
+                      role="buyer"
+                      onViewVehicle={(v) => {
+                        setSelectedVehicle(v);
+                        onSelectTab('vehicle-detail');
+                      }}
+                      onViewPassport={(v) => onOpenPassport(v)}
+                    />
+                  ))}
+                </div>
+              );
+            })()}
           </div>
 
           {/* ==========================================================
               ACTIVE TRANSACTION WORKFLOW BANNER (IF ACTIVE)
           ========================================================== */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Active Purchase In Progress</span>
-                  <h4 className="text-sm font-bold font-heading text-slate-900">
-                    {MOCK_BUYER_DATA.activePurchase.vehicleName}
-                  </h4>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-mono text-slate-400 block">Locked in Escrow</span>
-                <span className="text-base font-heading font-extrabold text-slate-900">
-                  {MOCK_BUYER_DATA.activePurchase.priceInr}
-                </span>
-              </div>
-            </div>
-
-            {/* Workflow Progress Indicator */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              {MOCK_BUYER_DATA.activePurchase.stages.map((stg) => (
-                <div
-                  key={stg.id}
-                  className={`p-3.5 rounded-xl border text-xs transition-all ${
-                    stg.status === 'completed'
-                      ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
-                      : stg.status === 'in_progress'
-                      ? 'bg-teal-50 border-teal-300 text-teal-950 ring-2 ring-teal-500/20 font-semibold'
-                      : 'bg-slate-50 border-slate-200 text-slate-400'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] font-mono uppercase font-bold tracking-wider">
-                      Stage 0{stg.id}
-                    </span>
-                    {stg.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-                    {stg.status === 'in_progress' && <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />}
+          {escrowTxHash && (
+            <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
+                    <ShieldCheck className="w-5 h-5" />
                   </div>
-                  <div className="font-bold font-heading text-slate-900">{stg.title}</div>
-                  <p className="text-[10px] text-slate-500 mt-1 leading-tight">{stg.detail}</p>
+                  <div>
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">Active Purchase In Progress</span>
+                    <h4 className="text-sm font-bold font-heading text-slate-900">
+                      {selectedVehicle?.model || selectedVehicle?.name || 'Verified Vehicle'}
+                    </h4>
+                  </div>
                 </div>
-              ))}
+                <div className="text-right">
+                  <span className="text-xs font-mono text-slate-400 block">Locked in Escrow</span>
+                  <span className="text-base font-heading font-extrabold text-slate-900">
+                    {selectedVehicle?.priceInr || '0.0001 Sepolia ETH'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Workflow Progress Indicator */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                {[
+                  { id: 1, title: 'Vehicle Selected', status: 'completed', detail: 'Cryptographic intent registered' },
+                  { id: 2, title: 'Title Verified', status: 'completed', detail: 'RTO & Telemetry verified' },
+                  { id: 3, title: 'Secure Escrow Lock', status: 'completed', detail: 'Locked on Sepolia Vault' },
+                  { id: 4, title: 'Title Transfer', status: 'in_progress', detail: 'Awaiting RTO digital key transfer' }
+                ].map((stg) => (
+                  <div
+                    key={stg.id}
+                    className={`p-3.5 rounded-xl border text-xs transition-all ${
+                      stg.status === 'completed'
+                        ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+                        : stg.status === 'in_progress'
+                        ? 'bg-teal-50 border-teal-300 text-teal-950 ring-2 ring-teal-500/20 font-semibold'
+                        : 'bg-slate-50 border-slate-200 text-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider">
+                        Stage 0{stg.id}
+                      </span>
+                      {stg.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      {stg.status === 'in_progress' && <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />}
+                    </div>
+                    <div className="font-bold font-heading text-slate-900">{stg.title}</div>
+                    <p className="text-[10px] text-slate-500 mt-1 leading-tight">{stg.detail}</p>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Deployed Smart Contracts */}
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-3">
@@ -641,20 +663,29 @@ export default function BuyerDashboardView({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {VEHICLES.filter((v) => savedVehicles.includes(v.id)).map((car) => (
-              <GlobalVehicleCard
-                key={car.id}
-                vehicle={car}
-                role="buyer"
-                onViewVehicle={(v) => {
-                  setSelectedVehicle(v);
-                  onSelectTab('vehicle-detail');
-                }}
-                onViewPassport={(v) => onOpenPassport(v)}
-              />
-            ))}
-          </div>
+          {savedVehicles.length === 0 ? (
+            <div className="text-center py-12 px-4 bg-white rounded-3xl border border-slate-200 shadow-xs space-y-2">
+              <p className="font-bold text-slate-800 text-sm">No saved vehicles yet.</p>
+              <p className="text-xs text-slate-500">
+                Click the bookmark icon on any vehicle card in the marketplace to save it here.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {vehiclesData.filter((v) => savedVehicles.includes(v.id)).map((car) => (
+                <GlobalVehicleCard
+                  key={car.id}
+                  vehicle={car}
+                  role="buyer"
+                  onViewVehicle={(v) => {
+                    setSelectedVehicle(v);
+                    onSelectTab('vehicle-detail');
+                  }}
+                  onViewPassport={(v) => onOpenPassport(v)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -677,15 +708,15 @@ export default function BuyerDashboardView({
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
                 <div>
                   <h3 className="text-base font-bold font-heading text-slate-900">
-                    {selectedVehicle.model || selectedVehicle.name || MOCK_BUYER_DATA.activePurchase.vehicleName}
+                    {selectedVehicle ? (selectedVehicle.model || selectedVehicle.name) : 'Verified Vehicle'}
                   </h3>
                   <p className="text-xs text-slate-500 font-mono">
-                    Target VIN: {selectedVehicle.vin || '1FA6P8CF0H51092831'} • Seller: Vikram Singhania
+                    Target VIN: {selectedVehicle?.vin || '—'} • Seller: {selectedVehicle?.ownerAddress ? `${selectedVehicle.ownerAddress.slice(0, 8)}...${selectedVehicle.ownerAddress.slice(-6)}` : 'Individual Seller'}
                   </p>
                 </div>
                 <div className="text-right">
                   <span className="text-lg font-heading font-extrabold text-teal-800 block">
-                    {selectedVehicle.priceInr || MOCK_BUYER_DATA.activePurchase.priceInr}
+                    {selectedVehicle?.priceInr || '₹50,00,000'}
                   </span>
                   <span className="text-xs font-mono text-slate-400">Escrow Value: 0.0001 Sepolia ETH</span>
                 </div>
@@ -703,26 +734,29 @@ export default function BuyerDashboardView({
                     key={stg.id}
                     className={`p-4 rounded-xl border text-xs ${
                       stg.status === 'completed'
-                        ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                        ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950 font-semibold'
                         : stg.status === 'in_progress'
-                        ? 'bg-teal-50 border-teal-300 text-teal-900 font-bold ring-2 ring-teal-500/20'
+                        ? 'bg-teal-50 border-teal-300 text-teal-950 ring-2 ring-teal-500/20 font-bold'
                         : 'bg-white border-slate-200 text-slate-400'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-mono">STAGE 0{stg.id}</span>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-[10px] font-mono uppercase font-bold tracking-wider">
+                        Stage 0{stg.id}
+                      </span>
                       {stg.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      {stg.status === 'in_progress' && <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping" />}
                     </div>
-                    <div className="font-bold">{stg.title}</div>
-                    <p className="text-[10px] text-slate-500 mt-1">{stg.detail}</p>
+                    <div className="font-bold font-heading text-slate-900">{stg.title}</div>
+                    <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{stg.detail}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Action Box: Real On-Chain Escrow */}
-              <div className="pt-2">
+              {/* Escrow Action Box */}
+              <div className="pt-4 border-t border-slate-200">
                 {escrowError && (
-                  <div className="p-3.5 mb-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
+                  <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
                     <div>
                       <strong className="block font-bold">Escrow Execution Error</strong>
@@ -733,12 +767,12 @@ export default function BuyerDashboardView({
 
                 {escrowTxHash ? (
                   <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2 font-mono text-xs">
-                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                      <span>Funds Successfully Deposited into Sepolia Smart Escrow!</span>
+                    <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm font-sans">
+                      <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                      <span>Funds Locked in Smart Escrow on Sepolia!</span>
                     </div>
                     <p className="text-emerald-700 font-sans text-xs">
-                      Deposit of 0.0001 Sepolia ETH is immutably locked in the VehicleEscrow contract until RTO title transition is completed.
+                      Deposit of 0.0001 Sepolia ETH is securely held on-chain. Regional Transport Authority will now verify title and execute final transfer of the vehicle NFT.
                     </p>
                     <div className="p-2.5 bg-white rounded-lg border border-emerald-200 flex items-center justify-between gap-2">
                       <span className="text-slate-800 break-all text-[11px] font-bold">{escrowTxHash}</span>
@@ -755,8 +789,8 @@ export default function BuyerDashboardView({
                     <div className="pt-2 flex justify-end">
                       <button
                         type="button"
-                        onClick={() => onSelectTab('transactions')}
-                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer"
+                        onClick={() => onSelectTab('history')}
+                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer font-sans"
                       >
                         View in Transaction History →
                       </button>
@@ -781,10 +815,11 @@ export default function BuyerDashboardView({
                           if (signer) {
                             res = await initiateBuyerEscrow({
                               signer,
-                              tokenId: 1,
-                              vin: selectedVehicle.vin || 'VIN-DEL-2024-88',
+                              tokenId: selectedVehicle?.tokenId || 1,
+                              vin: selectedVehicle?.vin || 'VIN-DEL-2024-88',
+                              sellerAddress: selectedVehicle?.ownerAddress || '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
                               amountEth: '0.0001',
-                              vehicleName: selectedVehicle.model || selectedVehicle.name || 'Verified Vehicle',
+                              vehicleName: selectedVehicle?.model || selectedVehicle?.name || 'Verified Vehicle',
                             });
                           }
                           const hash = res?.txHash || '0x09760f48966526993460f3df7addbfecd2cd4f1e79b10323d2f80d9d72fa3a3f';
@@ -794,7 +829,7 @@ export default function BuyerDashboardView({
                           const newTx = {
                             id: `TX-${Date.now().toString().slice(-5)}`,
                             date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-                            vehicle: selectedVehicle.model || selectedVehicle.name || 'Verified Vehicle',
+                            vehicle: selectedVehicle?.model || selectedVehicle?.name || 'Verified Vehicle',
                             type: 'Smart Escrow Lock & Deposit',
                             amount: '0.0001 Sepolia ETH',
                             status: 'Confirmed On-Chain',

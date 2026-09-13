@@ -6,11 +6,10 @@ import SellerDashboardView from './SellerDashboardView';
 import AuthorityDashboardView from './AuthorityDashboardView';
 import UserProfileTab from './UserProfileTab';
 import GlobalPassportModal from './GlobalPassportModal';
-import { VEHICLES } from '../../data/vehicles';
 import { useAuth } from '../../context/AuthContext';
 import { useWallet } from '../../context/WalletContext';
 import { verifyVehicleOnChain } from '../../services/blockchainService';
-import { updateVehicle, addAuthorityAuditEntry } from '../../services/vehicleStore';
+import { updateVehicle, addAuthorityAuditEntry, getAllVehicles } from '../../services/vehicleStore';
 import { Lock, ShieldX, ArrowLeft, LogIn } from 'lucide-react';
 
 // --- Guard Screens ---
@@ -135,7 +134,7 @@ export default function DashboardContainer({
   const [activeTab, setActiveTab] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [passportModalOpen, setPassportModalOpen] = useState(false);
-  const [selectedPassportVehicle, setSelectedPassportVehicle] = useState(VEHICLES[0]);
+  const [selectedPassportVehicle, setSelectedPassportVehicle] = useState(() => getAllVehicles()[0] || null);
 
   // --- Guard 1: Not Authenticated ---
   if (!isAuthenticated) {

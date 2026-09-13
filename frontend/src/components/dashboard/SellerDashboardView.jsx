@@ -28,8 +28,6 @@ import {
   Send,
   X
 } from 'lucide-react';
-import { MOCK_SELLER_DATA } from '../../data/dashboardData';
-import { VEHICLES } from '../../data/vehicles';
 import { useWallet } from '../../context/WalletContext';
 import { mintVehiclePassport } from '../../services/blockchainService';
 import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../../contracts/addresses';
@@ -109,7 +107,7 @@ export default function SellerDashboardView({
     }));
   });
 
-  const [buyerRequests, setBuyerRequests] = useState(MOCK_SELLER_DATA.buyerRequests);
+  const [buyerRequests, setBuyerRequests] = useState([]);
 
   // Listing modal state for verified cars ready to be listed
   const [listingModalCar, setListingModalCar] = useState(null);
@@ -385,7 +383,7 @@ export default function SellerDashboardView({
           <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2 max-w-2xl">
               <h1 className="text-2xl sm:text-3xl font-heading font-extrabold text-slate-900 tracking-tight">
-                Welcome back, {MOCK_SELLER_DATA.name}
+                Welcome back, {account ? `${account.slice(0, 6)}...${account.slice(-4)}` : 'Seller'}
               </h1>
               <p className="text-sm text-slate-500 leading-relaxed">
                 Manage your vehicles with confidence. Upload documents to IPFS, receive RTO verification, and list on the Sepolia marketplace.
@@ -411,10 +409,10 @@ export default function SellerDashboardView({
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Active Listings', value: MOCK_SELLER_DATA.stats.activeListings },
-              { label: 'Verified Vehicles', value: MOCK_SELLER_DATA.stats.verifiedVehicles },
-              { label: 'Buyer Interest', value: MOCK_SELLER_DATA.stats.buyerInterest },
-              { label: 'Pending Transfers', value: MOCK_SELLER_DATA.stats.pendingTransfers }
+              { label: 'Active on Market', value: vehiclesList.filter(v => v.listingStatus === 'Listed on Marketplace').length },
+              { label: 'Verified by RTO', value: vehiclesList.filter(v => v.verificationStatus === 'Verified').length },
+              { label: 'Under RTO Review', value: vehiclesList.filter(v => v.verificationStatus === 'Under RTO Review').length },
+              { label: 'Total Fleet', value: vehiclesList.length }
             ].map(s => (
               <div key={s.label} className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
                 <span className="text-xs font-semibold text-slate-500 block">{s.label}</span>
@@ -431,28 +429,34 @@ export default function SellerDashboardView({
                 <p className="text-xs text-slate-500">Track digital passports, pricing, and buyer inquiries.</p>
               </div>
               <button onClick={() => onSelectTab('my-vehicles')} className="text-xs font-bold text-teal-700 hover:underline cursor-pointer">
-                View All →
+                View All ({vehiclesList.length}) →
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {vehiclesList.slice(0, 2).map(car => (
-                <div key={car.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <img src={car.image} alt={car.name} className="w-16 h-12 object-contain bg-white rounded-lg p-1 border border-slate-200" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">{car.name}</h4>
-                      <p className="text-[11px] text-slate-500 font-mono">{car.priceInr} • {car.views} Views</p>
+            {vehiclesList.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400">
+                No vehicles uploaded yet. Click "+ List Vehicle" to upload your first vehicle specs and IPFS documents.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {vehiclesList.slice(0, 2).map(car => (
+                  <div key={car.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <img src={car.image} alt={car.name} className="w-16 h-12 object-contain bg-white rounded-lg p-1 border border-slate-200" />
+                      <div>
+                        <h4 className="text-xs font-bold text-slate-900">{car.name}</h4>
+                        <p className="text-[11px] text-slate-500 font-mono">{car.priceInr} • {car.listingStatus || 'Under Review'}</p>
+                      </div>
                     </div>
+                    <button
+                      onClick={() => onOpenPassport(getAllVehicles().find(v => v.id === car.id) || car)}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-teal-800 hover:border-teal-300 text-xs font-semibold cursor-pointer"
+                    >
+                      Passport
+                    </button>
                   </div>
-                  <button
-                    onClick={() => onOpenPassport(VEHICLES.find(v => v.id === car.id) || VEHICLES[0])}
-                    className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-teal-800 hover:border-teal-300 text-xs font-semibold cursor-pointer"
-                  >
-                    Passport
-                  </button>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Deployed Contracts Info */}
@@ -593,7 +597,7 @@ export default function SellerDashboardView({
                             </span>
                           )}
                           <button
-                            onClick={() => onOpenPassport(VEHICLES.find(v => v.id === car.id) || VEHICLES[0])}
+                            onClick={() => onOpenPassport(getAllVehicles().find(v => v.id === car.id) || car)}
                             className="px-3 py-1.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100 text-xs font-semibold cursor-pointer"
                           >
                             Passport
@@ -1256,38 +1260,14 @@ export default function SellerDashboardView({
       ═══════════════════════════════════════════════════════════════════ */}
       {activeTab === 'transfer' && (
         <div className="space-y-6 max-w-3xl mx-auto">
-          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs space-y-6">
-            <div>
-              <span className="text-xs font-mono text-teal-700 font-bold uppercase tracking-wider block">Ownership Transfer Workflow</span>
-              <h2 className="text-2xl font-heading font-extrabold text-slate-900">{MOCK_SELLER_DATA.activeTransfer.vehicleName}</h2>
-              <p className="text-xs text-slate-500 font-mono">
-                Transfer ID: {MOCK_SELLER_DATA.activeTransfer.id} • Buyer: {MOCK_SELLER_DATA.activeTransfer.buyerName}
-              </p>
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-8 shadow-xs text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 flex items-center justify-center mx-auto">
+              <ArrowRightLeft className="w-6 h-6" />
             </div>
-            <div className="space-y-3">
-              {MOCK_SELLER_DATA.activeTransfer.stages.map(stg => (
-                <div
-                  key={stg.step}
-                  className={`p-4 rounded-2xl border text-xs flex items-center justify-between ${
-                    stg.status === 'completed' ? 'bg-emerald-50/70 border-emerald-200' :
-                    stg.status === 'in_progress' ? 'bg-teal-50 border-teal-300 ring-2 ring-teal-500/20' :
-                    'bg-slate-50 border-slate-200 text-slate-400'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="w-6 h-6 rounded-full bg-white border border-slate-200 flex items-center justify-center font-mono font-bold text-[10px]">0{stg.step}</span>
-                    <div>
-                      <h4 className="font-bold text-slate-900">{stg.title}</h4>
-                      <p className="text-[11px] text-slate-500">{stg.note}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-mono text-slate-500 block">{stg.date}</span>
-                    <span className="font-bold text-[11px] capitalize text-teal-800">{stg.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <h3 className="text-base font-heading font-bold text-slate-900">No Active Ownership Transfers</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              When a buyer deposits funds into the Sepolia escrow contract for one of your listed vehicles, the transfer workflow and RTO sign-off stages will appear here in real-time.
+            </p>
           </div>
         </div>
       )}
