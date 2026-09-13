@@ -177,7 +177,26 @@ export default function DashboardContainer({
   };
 
   const getUserName = () => currentUser?.name || 'User';
-  const getWalletAddress = () => currentUser?.walletAddress || 'Not connected';
+
+  const [currentWalletAddress, setCurrentWalletAddress] = useState(currentUser?.walletAddress || null);
+
+  useEffect(() => {
+    setCurrentWalletAddress(currentUser?.walletAddress || null);
+  }, [currentUser?.walletAddress]);
+
+  const handleWalletDisconnected = () => {
+    setCurrentWalletAddress(null);
+    if (currentUser) {
+      currentUser.walletAddress = null;
+    }
+  };
+
+  const handleWalletConnected = (newAddr) => {
+    setCurrentWalletAddress(newAddr);
+    if (currentUser) {
+      currentUser.walletAddress = newAddr;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] text-slate-900 font-sans flex overflow-x-hidden antialiased">
@@ -202,7 +221,9 @@ export default function DashboardContainer({
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           onLogout={handleLogout}
           userName={getUserName()}
-          walletAddress={getWalletAddress()}
+          walletAddress={currentWalletAddress || 'Not connected'}
+          onDisconnectWallet={handleWalletDisconnected}
+          onConnectWallet={handleWalletConnected}
         />
 
         {/* Content Area */}
