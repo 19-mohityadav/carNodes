@@ -22,7 +22,7 @@ export default function HeroShowroom({
           className="text-[13vw] font-extrabold uppercase tracking-tighter text-[#111111]/[0.032] leading-none whitespace-nowrap transition-all duration-700 ease-out font-heading"
           style={{ fontFamily: "'Space Grotesk', sans-serif" }}
         >
-          {activeCar.watermark || 'SUPER SPORT'}
+          {activeCar.watermark || 'Car Nodes'}
         </h1>
       </div>
 
