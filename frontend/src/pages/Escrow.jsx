@@ -7,6 +7,7 @@ import { SectionLabel, SwissHeading } from '../components/ui/SectionLabel';
 import { SwissButton } from '../components/ui/SwissButton';
 import { useWallet } from '../context/WalletContext';
 import { useRole } from '../context/RoleContext';
+import { CONTRACT_ADDRESSES } from '../contracts/addresses';
 import { weiToINR, shortAddress, formatDate, etherscanTx } from '../utils/format';
 import { Shield, ExternalLink, ArrowRight, CheckCircle2, RotateCcw } from 'lucide-react';
 
@@ -41,8 +42,8 @@ export default function Escrow() {
             <SwissHeading level={1} className="text-4xl sm:text-5xl">
               Escrow Vault <span className="text-swiss-accent">#{escrow.escrowId}</span>
             </SwissHeading>
-            <p className="mt-2 text-sm text-swiss-black/70 font-medium">
-              Contract Address: 0x20c56b1cf38BE7CDaB9B18348eFc729D32DfB317 • Sepolia
+            <p className="mt-2 text-sm text-swiss-black/70 font-medium font-mono">
+              Contract Address: {CONTRACT_ADDRESSES.VehicleEscrow} • Sepolia
             </p>
           </div>
 

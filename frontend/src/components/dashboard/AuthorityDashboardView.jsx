@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { MOCK_AUTHORITY_DATA } from '../../data/dashboardData';
 import { VEHICLES } from '../../data/vehicles';
+import { ETHERSCAN_BASE } from '../../contracts/addresses';
 
 export default function AuthorityDashboardView({
   activeTab,
@@ -640,14 +641,27 @@ export default function AuthorityDashboardView({
 
           <div className="space-y-3 font-mono text-xs">
             {MOCK_AUTHORITY_DATA.auditTrail.map((log) => (
-              <div key={log.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <span className="font-bold text-slate-900 block font-sans">{log.action}: {log.vehicle}</span>
-                  <span className="text-[11px] text-slate-500">Operator: {log.operator} • {log.date}</span>
+              <div key={log.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <span className="font-bold text-slate-900 block font-sans">{log.action}: {log.vehicle}</span>
+                    <span className="text-[11px] text-slate-500">Operator: {log.operator} • {log.date}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] text-emerald-700">✓ {log.status}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-teal-700 font-bold block">{log.txHash}</span>
-                  <span className="text-[10px] text-emerald-700">✓ {log.status}</span>
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-200">
+                  <span className="text-teal-700 font-bold text-[10px] break-all pr-2">{log.txHash}</span>
+                  <a
+                    href={`${ETHERSCAN_BASE}/tx/${log.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[10px] font-bold text-teal-600 hover:text-teal-900 shrink-0 transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Etherscan
+                  </a>
                 </div>
               </div>
             ))}

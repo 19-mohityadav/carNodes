@@ -1,11 +1,12 @@
 // Deployed contract addresses on Ethereum Sepolia
-// Source: TRD §11 - Current Deployment
+// Verified Contracts
 export const CONTRACT_ADDRESSES = {
-  VehiclePassport: '0x0127B65691119643B0C233D9F324be7e51d90A44',
-  VehicleRegistry: '0x36f1323951f9C8F9B2EBF2f71B777d7330764006',
-  VehicleEscrow:   '0x20c56b1cf38BE7CDaB9B18348eFc729D32DfB317',
-  MockINR:         '0x9843aEd0A2535fFfa5f751f74BbB329949f5fD1d',
+  VehiclePassport: import.meta.env.VITE_PASSPORT_CONTRACT_ADDRESS || '0xec5b401ECe64d130B6Cc83c4916137990009Eaf5',
+  VehicleRegistry: import.meta.env.VITE_REGISTRY_CONTRACT_ADDRESS || '0xD585f8daDdB3F438aCE2A5b4e86f47e11825fF30',
+  VehicleEscrow:   import.meta.env.VITE_ESCROW_CONTRACT_ADDRESS   || '0xB9d64e71bc01C8b09F19fF258dE21E0ebDb78EE2',
+  MockINR:         import.meta.env.VITE_MOCKINR_CONTRACT_ADDRESS  || '0x1aE2E1190f4e026f125111fA80882cCFE50EEC1C',
 };
 
 export const SEPOLIA_CHAIN_ID = 11155111;
 export const ETHERSCAN_BASE = 'https://sepolia.etherscan.io';
+
