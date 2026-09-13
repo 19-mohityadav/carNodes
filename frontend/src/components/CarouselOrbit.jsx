@@ -159,14 +159,6 @@ export default function CarouselOrbit({ onSelectVehicle, activeIndex }) {
             justifyContent: 'center',
           }}
         >
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#2B2521] via-[#3D5066] to-[#B89B5E] p-[2px] shadow-2xl animate-pulse">
-            <div className="w-full h-full rounded-full bg-[#FDFBF7] flex items-center justify-center border border-zinc-200">
-              <span className="font-mono text-sm font-extrabold text-[#2B2521] tracking-tighter">cN</span>
-            </div>
-          </div>
-          <div className="mt-2 px-3 py-1 rounded-full bg-zinc-900/80 backdrop-blur-xs text-[10px] font-mono font-bold text-amber-300 uppercase tracking-widest border border-amber-500/30">
-            RWA NODE
-          </div>
         </div>
 
         {/* ─────────────────────────────────
