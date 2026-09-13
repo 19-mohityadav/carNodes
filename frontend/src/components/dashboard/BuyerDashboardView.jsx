@@ -61,13 +61,33 @@ export default function BuyerDashboardView({
   const [escrowStage, setEscrowStage] = useState(3);
   const [txList, setTxList] = useState(MOCK_BUYER_DATA.transactionsHistory);
 
-  // Reactively listen for new vehicles minted by seller
+  // Reactively listen for new vehicles with cross-tab support & polling
   React.useEffect(() => {
     const handleVehiclesUpdate = () => {
       setVehiclesData(getAllVehicles());
     };
+
     window.addEventListener('carnodes_vehicles_updated', handleVehiclesUpdate);
-    return () => window.removeEventListener('carnodes_vehicles_updated', handleVehiclesUpdate);
+    window.addEventListener('storage', handleVehiclesUpdate);
+    window.addEventListener('focus', handleVehiclesUpdate);
+
+    let ch;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        ch = new BroadcastChannel('carnodes_sync_channel');
+        ch.onmessage = () => handleVehiclesUpdate();
+      }
+    } catch (e) {}
+
+    const interval = setInterval(handleVehiclesUpdate, 2000);
+
+    return () => {
+      window.removeEventListener('carnodes_vehicles_updated', handleVehiclesUpdate);
+      window.removeEventListener('storage', handleVehiclesUpdate);
+      window.removeEventListener('focus', handleVehiclesUpdate);
+      if (ch) ch.close();
+      clearInterval(interval);
+    };
   }, []);
   
   // AI Agent Chat State
