@@ -42,22 +42,32 @@ export const MOCK_BUYER_DATA = {
   transactionsHistory: [
     {
       id: "TX-77102",
-      date: "15 Aug 2026",
-      vehicle: "2023 Audi TT RS Coupé",
-      type: "Escrow Deposit",
-      amount: "₹54,00,000",
-      status: "Completed",
-      txHash: "0x3f4a...92b1",
+      date: "12 Sep 2026",
+      vehicle: "2024 Audi RS e-tron GT",
+      type: "Escrow Deposit & Lock",
+      amount: "0.01 Sepolia ETH",
+      status: "Confirmed On-Chain",
+      txHash: "0x09760f48966526993460f3df7addbfecd2cd4f1e79b10323d2f80d9d72fa3a3f",
       blockchain: "Ethereum Sepolia"
     },
     {
       id: "TX-66201",
-      date: "28 Jul 2026",
+      date: "12 Sep 2026",
       vehicle: "Digital Passport Verification Fee",
       type: "Oracle Fee",
-      amount: "₹1,500",
-      status: "Completed",
-      txHash: "0x11b2...88aa",
+      amount: "mINR 1,500",
+      status: "Confirmed On-Chain",
+      txHash: "0x39c21cf43d3fdf76be67450d22d68231470fc8992e50cd29770c81e377b5d4e9",
+      blockchain: "Ethereum Sepolia"
+    },
+    {
+      id: "TX-55099",
+      date: "12 Sep 2026",
+      vehicle: "Vehicle Registry Identity Token",
+      type: "Registry Attestation",
+      amount: "Gas 92,450",
+      status: "Confirmed On-Chain",
+      txHash: "0x5d7af784023ab5a42548ecfba2bbb97e81e75caedeec8b5703810b9b1d2b4eb7",
       blockchain: "Ethereum Sepolia"
     }
   ]
@@ -394,38 +404,38 @@ export const MOCK_AUTHORITY_DATA = {
       vehicle: "2024 Audi RS e-tron GT (#CN-77310)",
       operator: "Inspector R. Deshmukh (MH02)",
       blockchain: "Ethereum Sepolia",
-      txHash: "0x9c8b31a2...7a6f99b1",
-      status: "Recorded On-Chain"
+      txHash: "0x5d7af784023ab5a42548ecfba2bbb97e81e75caedeec8b5703810b9b1d2b4eb7",
+      status: "Confirmed On-Chain"
     },
     {
       id: "AUD-890",
       date: "12 Sep 2026, 10:45 AM",
-      action: "Document Approved",
+      action: "Registry Linked & Stamped",
       vehicle: "2023 Audi TT RS Coupé (#CN-10294)",
       operator: "Inspector R. Deshmukh (MH02)",
       blockchain: "Ethereum Sepolia",
-      txHash: "0x11b24901...99a0ef42",
-      status: "Recorded On-Chain"
+      txHash: "0x226d2025b0e5c1dd9faa34afc04d7fadcd915b4b25e154060345f0741e1296b3",
+      status: "Confirmed On-Chain"
     },
     {
       id: "AUD-889",
       date: "11 Sep 2026, 05:20 PM",
-      action: "Ownership Transfer Initiated",
+      action: "Escrow Protocol Authorized",
       vehicle: "2022 Toyota Camry XSE / Audi R8 (#CN-48291)",
       operator: "Sepolia Escrow Protocol Oracle",
       blockchain: "Ethereum Sepolia",
-      txHash: "0x7f4a8812...92b1cc34",
-      status: "Recorded On-Chain"
+      txHash: "0xfbacc09881921593275848174ecaa91282f0a4893fa2f50ce18a572aba46a5fd",
+      status: "Confirmed On-Chain"
     },
     {
       id: "AUD-888",
       date: "11 Sep 2026, 02:00 PM",
-      action: "Hypothecation Clearance Stamped",
+      action: "Vehicle Passport Mint Genesis",
       vehicle: "2023 Ford Mustang Shelby GT500 (#CN-50091)",
-      operator: "Banking Node Gateway #10",
+      operator: "National Node Gateway",
       blockchain: "Ethereum Sepolia",
-      txHash: "0x3c914028...81a07712",
-      status: "Recorded On-Chain"
+      txHash: "0xa49effb9e3b3fac0478b7ea82bed5ce9d9e2c560aa491e1d69e8dccf34640dde",
+      status: "Confirmed On-Chain"
     }
   ]
 };

@@ -32,6 +32,7 @@ import {
 import GlobalVehicleCard from './GlobalVehicleCard';
 import { VEHICLES } from '../../data/vehicles';
 import { MOCK_BUYER_DATA } from '../../data/dashboardData';
+import { ETHERSCAN_BASE } from '../../contracts/addresses';
 
 export default function BuyerDashboardView({
   activeTab,
@@ -609,14 +610,28 @@ export default function BuyerDashboardView({
           </h2>
           <div className="space-y-3">
             {MOCK_BUYER_DATA.transactionsHistory.map((tx) => (
-              <div key={tx.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                <div>
-                  <p className="font-bold text-slate-900">{tx.vehicle}</p>
-                  <p className="text-[11px] text-slate-500 font-mono">{tx.type} • {tx.date} • {tx.blockchain}</p>
+              <div key={tx.id} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-bold text-slate-900">{tx.vehicle}</p>
+                    <p className="text-[11px] text-slate-500 font-mono">{tx.type} • {tx.date} • {tx.blockchain}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="font-bold text-slate-900 block">{tx.amount}</span>
+                    <span className="text-[10px] font-mono text-emerald-700 font-bold">{tx.status}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="font-bold text-slate-900 block">{tx.amount}</span>
-                  <span className="text-[10px] font-mono text-emerald-700 font-bold">{tx.status}</span>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-200">
+                  <span className="font-mono text-[10px] text-slate-400 break-all pr-2">{tx.txHash}</span>
+                  <a
+                    href={`${ETHERSCAN_BASE}/tx/${tx.txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-[10px] font-bold text-teal-600 hover:text-teal-800 shrink-0"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    Etherscan
+                  </a>
                 </div>
               </div>
             ))}
