@@ -19,15 +19,7 @@ export default {
         sans: ['Inter', 'Helvetica Neue', 'Helvetica', 'Arial', 'sans-serif'],
         mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
-      borderRadius: {
-        none: '0px',
-        DEFAULT: '0px',
-        sm: '0px',
-        md: '0px',
-        lg: '0px',
-        xl: '0px',
-        full: '0px',
-      },
+
       fontSize: {
         '10xl': ['10rem', { lineHeight: '0.9' }],
         '11xl': ['12rem', { lineHeight: '0.85' }],
@@ -55,9 +47,7 @@ export default {
         112: '28rem',
         128: '32rem',
       },
-      boxShadow: {
-        none: 'none',
-      },
+
       animation: {
         'slide-up': 'slideUp 0.2s ease-out',
         'fade-in': 'fadeIn 0.3s ease-out',
