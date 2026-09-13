@@ -158,7 +158,7 @@ export default function SellerDashboardView({
   const [mintProgress, setMintProgress] = useState('');
   const [mintedVehicleId, setMintedVehicleId] = useState(null);
 
-  // ── Reactive sync from vehicleStore ──────────────────────────────────────
+  // ── Reactive sync from vehicleStore with multi-tab support & polling ────
   React.useEffect(() => {
     const handle = () => {
       const all = getAllVehicles();
@@ -173,14 +173,36 @@ export default function SellerDashboardView({
         verificationStatus: v.verificationStatus || v.verifications?.title || 'Verified',
         mintStatus: v.mintStatus || 'Minted',
         riskStatus: 'LOW',
-        listingStatus: v.listingStatus || 'Listed on Sepolia',
+        listingStatus: v.listingStatus || 'Pending Verification',
         views: 120,
         inquiries: 3,
         trustScore: v.trustScore || 94
       })));
     };
+
     window.addEventListener('carnodes_vehicles_updated', handle);
-    return () => window.removeEventListener('carnodes_vehicles_updated', handle);
+    window.addEventListener('carnodes_queue_updated', handle);
+    window.addEventListener('storage', handle);
+    window.addEventListener('focus', handle);
+
+    let ch;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        ch = new BroadcastChannel('carnodes_sync_channel');
+        ch.onmessage = () => handle();
+      }
+    } catch (e) {}
+
+    const interval = setInterval(handle, 2000);
+
+    return () => {
+      window.removeEventListener('carnodes_vehicles_updated', handle);
+      window.removeEventListener('carnodes_queue_updated', handle);
+      window.removeEventListener('storage', handle);
+      window.removeEventListener('focus', handle);
+      if (ch) ch.close();
+      clearInterval(interval);
+    };
   }, []);
 
   // ── File upload handler (per document) ───────────────────────────────────
