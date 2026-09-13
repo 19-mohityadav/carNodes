@@ -109,7 +109,7 @@ export default function DashboardSidebar({
           <div className="h-16 px-6 border-b border-slate-200/90 flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <img
-                src="/carnodes-logo.svg"
+                src="/car.svg"
                 alt="carNodes"
                 className="h-9 w-auto"
               />

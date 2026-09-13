@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, CheckCircle, ArrowRight, FileText, Award, ChevronRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import CarouselOrbit from './CarouselOrbit';
 
 export default function HeroShowroom({
@@ -7,14 +7,14 @@ export default function HeroShowroom({
   activeIndex,
   onSelectVehicle,
   onOpenMarketplace,
-  onOpenVerifyModal,
+  _onOpenVerifyModal,
 }) {
   const activeCar = vehicles[activeIndex] || vehicles[0];
 
   return (
     <section
       id="hero"
-      className="relative min-h-[92vh] bg-[#FDFBF7] overflow-hidden pt-6 pb-16 border-b border-zinc-200"
+      className="relative bg-[#FDFBF7] overflow-hidden pt-8 pb-14 lg:pt-12 lg:pb-18 border-b border-zinc-200"
     >
       {/* Background watermark */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -29,7 +29,7 @@ export default function HeroShowroom({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* SIDE-BY-SIDE HERO LAYOUT: LEFT = MAIN TEXT, RIGHT = CIRCULAR MOTION */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[78vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center py-2 lg:py-6">
 
           {/* LEFT COLUMN (6 cols): Main Text, Headline & CTAs */}
           <div className="lg:col-span-6 flex flex-col items-start text-left space-y-6">

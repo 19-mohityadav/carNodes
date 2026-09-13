@@ -381,7 +381,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
 
           {/* carNodes Logo */}
           <div className="flex items-center space-x-3 mb-3">
-            <img src="/carnodes-logo.svg" alt="carNodes" className="h-10 w-auto brightness-0 invert" />
+            <img src="/car.svg" alt="carNodes" className="h-10 w-auto brightness-0 invert" />
           </div>
 
           <h2 className="text-xl font-heading font-extrabold uppercase tracking-tight">
