@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { X, Search, SlidersHorizontal, Award, CheckCircle2, ShieldCheck, ArrowRight, Lock, Car, RefreshCw } from 'lucide-react';
+import { X, Search, SlidersHorizontal, Award, CheckCircle2, ShieldCheck, ArrowRight, Lock, Car, RefreshCw, ExternalLink, AlertCircle } from 'lucide-react';
+import { useWallet } from '../context/WalletContext';
+import { initiateBuyerEscrow } from '../services/blockchainService';
+import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../contracts/addresses';
+import { shortAddress } from '../utils/format';
 
 export default function MarketplaceModal({ 
   isOpen, 
@@ -11,12 +15,15 @@ export default function MarketplaceModal({
 }) {
   if (!isOpen) return null;
 
+  const { signer, account, connect } = useWallet();
   const [searchQuery, setSearchQuery] = useState('');
   const [minTrustScore, setMinTrustScore] = useState(90);
   const [maxPrice, setMaxPrice] = useState(150000);
   const [selectedVehicle, setSelectedVehicle] = useState(vehicles[0]);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [isProcessingEscrow, setIsProcessingEscrow] = useState(false);
+  const [txHash, setTxHash] = useState(null);
+  const [txError, setTxError] = useState(null);
 
   const filteredVehicles = vehicles.filter(car => {
     const matchesSearch = car.model.toLowerCase().includes(searchQuery.toLowerCase()) || 
@@ -27,16 +34,37 @@ export default function MarketplaceModal({
     return matchesSearch && matchesTrust && matchesPrice;
   });
 
-  const handleInitiateEscrow = () => {
-    if (!walletConnected) {
-      onOpenWalletModal();
+  const handleInitiateEscrow = async () => {
+    setTxError(null);
+    if (!walletConnected && !signer) {
+      if (onOpenWalletModal) onOpenWalletModal();
+      else if (connect) await connect();
       return;
     }
+
     setIsProcessingEscrow(true);
-    setTimeout(() => {
-      setIsProcessingEscrow(false);
+    try {
+      const res = await initiateBuyerEscrow({
+        signer,
+        tokenId: 1,
+        vin: selectedVehicle.vin || 'VIN-CN-48291',
+        amountEth: '0.0001',
+        vehicleName: selectedVehicle.model,
+      });
+
+      setTxHash(res.txHash);
       setPurchaseSuccess(true);
-    }, 1500);
+    } catch (err) {
+      console.error('Escrow on-chain error:', err);
+      const msg = err.reason || err.message || 'Transaction could not be completed on Sepolia.';
+      if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('action_rejected')) {
+        setTxError('Transaction was rejected in your Web3 wallet.');
+      } else {
+        setTxError(msg.length > 120 ? msg.slice(0, 120) + '...' : msg);
+      }
+    } finally {
+      setIsProcessingEscrow(false);
+    }
   };
 
   return (
@@ -220,17 +248,41 @@ export default function MarketplaceModal({
             </div>
 
             {/* ESCROW PURCHASE ACTION */}
-            <div>
-              {purchaseSuccess ? (
-                <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-2xl text-center space-y-2 font-mono">
-                  <ShieldCheck className="w-8 h-8 text-emerald-600 mx-auto" />
-                  <h4 className="text-sm font-bold text-emerald-950">Escrow Deposit Successful!</h4>
-                  <p className="text-xs text-emerald-800">
-                    Funds are safely locked in Algorand Smart Contract ASA #{selectedVehicle.algorandAssetId}. Awaiting physical delivery confirmation.
-                  </p>
+            <div className="space-y-3">
+              {txError && (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-xl flex items-start gap-2 text-xs font-mono">
+                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold text-red-800 block">Transaction Error</span>
+                    <span className="text-red-700">{txError}</span>
+                  </div>
+                </div>
+              )}
+              {purchaseSuccess && txHash ? (
+                <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-2xl space-y-3 font-mono">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-8 h-8 text-emerald-600 shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-bold text-emerald-950">Escrow Locked on Sepolia!</h4>
+                      <p className="text-[11px] text-emerald-700">Real transaction broadcast to Ethereum Sepolia.</p>
+                    </div>
+                  </div>
+                  <div className="bg-white rounded-lg border border-emerald-200 p-3 space-y-1">
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Transaction Hash</span>
+                    <span className="font-mono text-[11px] text-slate-800 break-all block">{txHash}</span>
+                  </div>
+                  <a
+                    href={`${ETHERSCAN_BASE}/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs font-bold text-teal-700 hover:text-teal-900 transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    View on Sepolia Etherscan →
+                  </a>
                   <button
-                    onClick={() => setPurchaseSuccess(false)}
-                    className="mt-2 text-xs text-emerald-700 hover:underline font-bold"
+                    onClick={() => { setPurchaseSuccess(false); setTxHash(null); setTxError(null); }}
+                    className="w-full mt-1 text-xs text-emerald-700 hover:underline font-bold"
                   >
                     Close & Reset
                   </button>
@@ -239,17 +291,17 @@ export default function MarketplaceModal({
                 <button
                   onClick={handleInitiateEscrow}
                   disabled={isProcessingEscrow}
-                  className="w-full py-4 rounded-2xl bg-[#2B2521] hover:bg-[#FF3B30] text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 cursor-pointer"
+                  className="w-full py-4 rounded-2xl bg-[#2B2521] hover:bg-[#FF3B30] disabled:opacity-70 text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 cursor-pointer"
                 >
                   {isProcessingEscrow ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin text-white" />
-                      <span>Locking Funds in Algorand Escrow...</span>
+                      <span>Broadcasting to Sepolia...</span>
                     </>
                   ) : (
                     <>
                       <Lock className="w-4 h-4 text-emerald-400" />
-                      <span>Initiate Escrow Purchase ({selectedVehicle.priceAlgo.toLocaleString()} ALGO)</span>
+                      <span>Lock Funds in Sepolia Escrow (0.0001 ETH)</span>
                     </>
                   )}
                 </button>

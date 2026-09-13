@@ -142,7 +142,24 @@ export default function CarouselOrbit({ onSelectVehicle, activeIndex }) {
         }}
       >
 
-
+        {/* ─────────────────────────────────
+            CENTER: Central Web3 Node Emblem (No Car Photo)
+        ───────────────────────────────── */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 15,
+            pointerEvents: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+        </div>
 
         {/* ─────────────────────────────────
             ROTATING ORBIT RING

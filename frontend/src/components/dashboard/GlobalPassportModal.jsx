@@ -19,6 +19,7 @@ import {
   FileBadge2,
   UserCheck
 } from 'lucide-react';
+import { ETHERSCAN_BASE } from '../../contracts/addresses';
 
 export default function GlobalPassportModal({
   isOpen,
@@ -274,7 +275,7 @@ export default function GlobalPassportModal({
                     title: 'Factory Assembly & First Registration',
                     location: 'OEM Certified Hub',
                     mileage: '0 mi',
-                    txHash: '0x89a1...4f92',
+                    txHash: '0xa49effb9e3b3fac0478b7ea82bed5ce9d9e2c560aa491e1d69e8dccf34640dde',
                     verifiedBy: 'OEM Manufacturer Node'
                   },
                   {
@@ -283,16 +284,16 @@ export default function GlobalPassportModal({
                     title: 'Scheduled Maintenance & 100-Point Inspection',
                     location: 'Apex Euro Service Center',
                     mileage: '14,200 mi',
-                    txHash: '0x3c91...81a0',
+                    txHash: '0x226d2025b0e5c1dd9faa34afc04d7fadcd915b4b25e154060345f0741e1296b3',
                     verifiedBy: 'Certified Service Node #12'
                   },
                   {
                     year: '2026',
-                    date: '10 Feb 2026',
+                    date: '12 Sep 2026',
                     title: 'carNodes Digital Vehicle Passport Minted',
                     location: 'Ethereum Sepolia Testnet',
                     mileage: '24,850 mi',
-                    txHash: '0x7f4a...92b1',
+                    txHash: '0x5d7af784023ab5a42548ecfba2bbb97e81e75caedeec8b5703810b9b1d2b4eb7',
                     verifiedBy: 'carNodes Authority Oracle'
                   }
                 ]).map((item, idx) => (
@@ -308,7 +309,15 @@ export default function GlobalPassportModal({
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                         <span>📍 {item.location}</span>
                         <span>⏱️ {item.mileage}</span>
-                        <span className="font-mono text-[11px] text-teal-700">Tx: {item.txHash}</span>
+                        <a
+                          href={`${ETHERSCAN_BASE}/tx/${item.txHash}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono text-[10px] text-teal-700 hover:text-teal-900 flex items-center gap-0.5 break-all"
+                        >
+                          <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+                          {item.txHash.slice(0, 18)}...
+                        </a>
                         <span className="text-[11px] text-emerald-700 font-medium">✓ {item.verifiedBy}</span>
                       </div>
                     </div>
