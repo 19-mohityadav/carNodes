@@ -33,7 +33,6 @@ export default function ConnectWalletModal({ isOpen, onClose, walletConnected, w
     },
     { id: 'pera', name: 'Pera Wallet', desc: 'Official Algorand Mobile & Web Wallet', badge: 'Algorand' },
     { id: 'walletconnect', name: 'WalletConnect', desc: 'Connect via QR code or mobile app', badge: 'Multi-Chain' },
-    { id: 'demo', name: 'Demo Testnet Wallet', desc: 'Simulated wallet with test ALGO tokens', badge: 'Instant Test' },
   ];
 
   const handleSelectProvider = (provId) => {

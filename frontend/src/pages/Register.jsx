@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, User, Mail, Lock, Eye, EyeOff, CheckCircle2, ArrowRight, AlertCircle, ShoppingBag, Car, Shield } from 'lucide-react';
-import { useRole, ROLES } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Register() {
   const navigate = useNavigate();
-  const { setRole } = useRole();
+  const { signUp } = useAuth();
 
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState('');
@@ -38,69 +38,22 @@ export function Register() {
     setLoading(true);
 
     try {
-      // Attempt registration API call to backend
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: identifier.includes('@') ? identifier.trim() : `${name.toLowerCase().replace(/\s+/g, '')}@example.com`,
-          phone: !identifier.includes('@') ? identifier.trim() : '9876543210',
-          password,
-          role: selectedRole
-        })
+      const res = await signUp({
+        email: identifier.includes('@') ? identifier.trim() : `${name.toLowerCase().replace(/\s+/g, '')}@carnodes.app`,
+        password,
+        name: name.trim(),
+        phone: !identifier.includes('@') ? identifier.trim() : '',
+        role: selectedRole,
       });
 
-      const resData = await response.json();
+      const userRole = (res?.profile?.role || selectedRole || 'buyer').toLowerCase();
 
-      if (response.ok && resData.success) {
-        const user = resData.data.user;
-        const roleLower = (selectedRole || 'BUYER').toLowerCase();
-
-        localStorage.setItem('carnodes_token', resData.data.token);
-        localStorage.setItem('carnodes_user', JSON.stringify(user));
-        
-        // Update context role
-        setRole(roleLower);
-
-        // Redirect based on role
-        if (roleLower === 'authority') {
-          navigate('/authority');
-        } else if (roleLower === 'seller') {
-          navigate('/create-listing');
-        } else {
-          navigate('/marketplace');
-        }
-        return;
-      } else {
-        setError(resData.message || 'Registration failed. Proceeding in demo mode.');
-        fallbackDemoRegister();
-      }
+      // Navigate to home — App.jsx auto-redirects to dashboard based on auth role
+      navigate('/');
     } catch (err) {
-      fallbackDemoRegister();
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fallbackDemoRegister = () => {
-    const roleLower = selectedRole.toLowerCase();
-    const demoUser = {
-      name: name.trim() || 'New User',
-      email: identifier,
-      role: selectedRole
-    };
-
-    localStorage.setItem('carnodes_token', 'demo_jwt_token_register_456');
-    localStorage.setItem('carnodes_user', JSON.stringify(demoUser));
-    setRole(roleLower);
-
-    if (roleLower === 'authority') {
-      navigate('/authority');
-    } else if (roleLower === 'seller') {
-      navigate('/create-listing');
-    } else {
-      navigate('/marketplace');
     }
   };
 
