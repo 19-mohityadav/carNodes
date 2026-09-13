@@ -9,24 +9,7 @@ export const ROLES = {
   ADMIN: 'admin',
 };
 
-// Seeded demo accounts for instant hackathon testing
-export const DEMO_CREDENTIALS = {
-  buyer: {
-    email: 'buyer@carnodes.com',
-    password: 'Buyer123!',
-    label: 'Demo Buyer (Arjun Mehta)',
-  },
-  seller: {
-    email: 'seller@carnodes.com',
-    password: 'Seller123!',
-    label: 'Demo Seller (Apex Dealership)',
-  },
-  authority: {
-    email: 'authority@carnodes.com',
-    password: 'Authority123!',
-    label: 'Demo Authority (RTO Inspector #409)',
-  },
-};
+
 
 const AuthContext = createContext(null);
 
@@ -136,8 +119,8 @@ export function AuthProvider({ children }) {
 
         if (mounted && initialSession?.user) {
           setSession(initialSession);
-          setUser(initialSession.user);
           await fetchProfile(initialSession.user.id, initialSession.user.user_metadata);
+          if (mounted) setUser(initialSession.user);
         }
       } catch (err) {
         console.error('Auth initialization error:', err);
@@ -155,15 +138,17 @@ export function AuthProvider({ children }) {
 
         setSession(currentSession);
         const currentUser = currentSession?.user || null;
-        setUser(currentUser);
 
         if (currentUser) {
+          setLoading(true);
           await fetchProfile(currentUser.id, currentUser.user_metadata);
+          if (mounted) setUser(currentUser);
         } else {
+          setUser(null);
           setProfile(null);
           setRole(ROLES.GUEST);
         }
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     );
 
@@ -237,12 +222,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 1-Click Demo Login for Hackathon Judges & Testing
-  const signInDemo = async (roleName) => {
-    const creds = DEMO_CREDENTIALS[roleName];
-    if (!creds) throw new Error(`Unknown demo role: ${roleName}`);
-    return await signIn({ email: creds.email, password: creds.password });
-  };
 
   // Sign Out
   const signOut = async () => {
@@ -306,7 +285,7 @@ export function AuthProvider({ children }) {
   };
 
   // Role authorization helpers
-  const isAuthenticated = Boolean(user && session);
+  const isAuthenticated = Boolean(user && session && role && role !== ROLES.GUEST);
   const isAuthority = role === ROLES.AUTHORITY || role === ROLES.ADMIN;
   const isSeller = role === ROLES.SELLER || role === ROLES.ADMIN;
   const isBuyer = role === ROLES.BUYER || role === ROLES.ADMIN;
@@ -330,7 +309,6 @@ export function AuthProvider({ children }) {
         user,
         profile,
         role,
-        setRole, // allow demo overriding when needed
         loading,
         authError,
         setAuthError,
@@ -342,7 +320,6 @@ export function AuthProvider({ children }) {
         canAccessRole,
         signIn,
         signUp,
-        signInDemo,
         signOut,
         linkWallet,
         updateProfile,

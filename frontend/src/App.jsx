@@ -36,19 +36,26 @@ export default function App() {
   const [isListModalOpen, setIsListModalOpen] = useState(false);
   const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
 
+  const getSanitizedRole = (r) => {
+    const validRoles = ['buyer', 'seller', 'authority', 'admin'];
+    const norm = String(r || '').toLowerCase();
+    return validRoles.includes(norm) ? norm : 'buyer';
+  };
+
   // Synchronize authenticated user from AuthContext
   useEffect(() => {
     if (isAuthenticated && user) {
+      const sanitized = getSanitizedRole(role);
       const activeProf = {
         id: user.id,
         name: profile?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User',
         email: user.email,
         phone: profile?.phone || user.user_metadata?.phone || '',
-        role: role,
-        walletAddress: profile?.wallet_address || account || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
+        role: sanitized,
+        walletAddress: profile?.wallet_address || account || null,
       };
       setCurrentUser(activeProf);
-      setDashboardRole(role || 'buyer');
+      setDashboardRole(sanitized);
     } else if (!authLoading && !isAuthenticated) {
       setCurrentUser(null);
       setViewMode('landing');
@@ -58,11 +65,12 @@ export default function App() {
   // Auto-navigate to dashboard when user authenticates
   useEffect(() => {
     if (isAuthenticated && !authLoading && viewMode === 'landing') {
-      setDashboardRole(role || 'buyer');
+      const sanitized = getSanitizedRole(role);
+      setDashboardRole(sanitized);
       setViewMode('dashboard');
       setIsLoginOpen(false);
     }
-  }, [isAuthenticated, authLoading]); // eslint-disable-line
+  }, [isAuthenticated, authLoading, role, viewMode]);
 
   const handleOpenAuth = (mode = 'signup') => {
     setAuthMode(mode);
@@ -71,8 +79,9 @@ export default function App() {
 
   const handleConnected = (provider, address, userObj) => {
     if (userObj) {
-      setCurrentUser(userObj);
-      setDashboardRole(userObj.role || 'buyer');
+      const targetRole = getSanitizedRole(role || userObj.role);
+      setCurrentUser({ ...userObj, role: targetRole });
+      setDashboardRole(targetRole);
       setViewMode('dashboard');
     }
   };
@@ -84,7 +93,22 @@ export default function App() {
   };
 
   const handleOpenDashboard = (targetRole = 'buyer') => {
-    setDashboardRole(targetRole);
+    // Require authentication before accessing any dashboard
+    if (!isAuthenticated) {
+      setAuthMode('signin');
+      setIsLoginOpen(true);
+      return;
+    }
+    // RBAC: only allow access to own role (admin can access all)
+    const userRole = getSanitizedRole(role);
+    const isAdmin = userRole === 'admin';
+    const normalizedTarget = getSanitizedRole(targetRole);
+    if (!isAdmin && userRole !== normalizedTarget) {
+      // Redirect to the user's own authorized dashboard
+      setDashboardRole(userRole);
+    } else {
+      setDashboardRole(normalizedTarget);
+    }
     setViewMode('dashboard');
   };
 

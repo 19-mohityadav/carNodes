@@ -23,12 +23,12 @@ import { useWallet } from '../context/WalletContext';
 export default function LoginModal({ isOpen, onClose, onConnected, initialMode = 'signup' }) {
   if (!isOpen) return null;
 
-  const { signIn, signUp, signInDemo, linkWallet } = useAuth();
+  const { signIn, signUp, linkWallet, isAuthenticated } = useAuth();
   const { connect, account } = useWallet();
 
-  // Modes: 'signup' | 'signin' | 'wallet' | 'connecting' | 'success'
+  // Modes: 'signup' | 'signin' | 'wallet-step' | 'wallet' | 'connecting' | 'success'
   const [mode, setMode] = useState(initialMode);
-  const [role, setRole] = useState('buyer'); // 'buyer' | 'seller' | 'authority'
+  const [role, setRole] = useState('buyer'); // 'buyer' | 'seller'
 
   // Form Fields
   const [fullName, setFullName] = useState('');
@@ -121,86 +121,54 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
     },
   ];
 
-  // 1-Click Demo Login Handler
-  const handleDemoLogin = async (demoRole) => {
-    setErrorMsg('');
-    setLoadingText(`Signing in as Demo ${demoRole.toUpperCase()}...`);
-    setMode('connecting');
-
-    try {
-      const res = await signInDemo(demoRole);
-      const prof = res?.profile;
-      const userObj = {
-        id: res?.data?.user?.id,
-        name: prof?.name || (demoRole === 'buyer' ? 'Arjun Mehta' : demoRole === 'seller' ? 'Vikram Singhania' : 'Dr. Rajesh Sharma'),
-        email: res?.data?.user?.email,
-        phone: prof?.phone || '',
-        role: demoRole,
-        walletAddress: prof?.wallet_address || (demoRole === 'authority' ? '0x1a2b...9a0b' : '0x71C7...976F'),
-        provider: 'supabase-demo',
-      };
-
-      setAuthenticatedUser(userObj);
-      setMode('success');
-
-      setTimeout(() => {
-        if (onConnected) onConnected('demo', userObj.walletAddress, userObj);
-        handleClose();
-      }, 1100);
-    } catch (err) {
-      console.error('Demo login error:', err);
+  // Web3 Wallet Connect (post-auth wallet step OR standalone wallet mode)
+  const handleWalletConnect = async (walletId) => {
+    if (!isAuthenticated) {
+      setErrorMsg('Please sign in with your email before connecting a wallet.');
       setMode('signin');
-      setErrorMsg(err.message || 'Demo login failed. Please try again.');
+      return;
     }
-  };
-
-  // Web3 Wallet Connect Handler
-  const handleWalletSelect = async (wallet) => {
-    setSelectedWallet(wallet);
-    setLoadingText(`Connecting to ${wallet.name} & verifying Web3 challenge...`);
+    setLoadingText(`Connecting ${walletId === 'metamask' ? 'MetaMask' : walletId === 'walletconnect' ? 'WalletConnect' : 'Pera Wallet'}...`);
     setMode('connecting');
     setErrorMsg('');
 
     try {
-      let walletAddr = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
-      if (wallet.id === 'metamask' && window.ethereum) {
-        try {
-          await connect();
-          if (account) walletAddr = account;
-        } catch (chainErr) {
-          console.warn('MetaMask connect note:', chainErr);
-        }
+      let walletAddr = null;
+      if (walletId === 'metamask' && window.ethereum) {
+        await connect();
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' }).catch(() => []);
+        walletAddr = accounts?.[0] || account;
+      }
+      // For WalletConnect / Pera, link whatever address we have or a placeholder
+      if (!walletAddr) walletAddr = account || null;
+
+      if (walletAddr && linkWallet) {
+        await linkWallet(walletAddr).catch(() => {});
       }
 
-      // Fast session sign in for demo web3 persona matching active role
-      const res = await signInDemo(role).catch(() => null);
-      const prof = res?.profile;
-
-      const userObj = {
-        id: res?.data?.user?.id || 'web3-user',
-        name: prof?.name || `${wallet.name} Operator`,
-        email: prof?.email || `${wallet.id}@carnodes.eth`,
-        role: role,
-        walletAddress: walletAddr,
-        provider: wallet.id,
-      };
-
-      if (linkWallet && walletAddr) {
-        linkWallet(walletAddr).catch(() => {});
-      }
-
-      setAuthenticatedUser(userObj);
-      setMode('success');
-
+      setLoadingText('Wallet linked to your account!');
       setTimeout(() => {
-        if (onConnected) onConnected(wallet.id, walletAddr, userObj);
-        handleClose();
-      }, 1200);
+        setMode('success');
+        setTimeout(() => {
+          if (onConnected) onConnected(walletId, walletAddr || '', authenticatedUser);
+          handleClose();
+        }, 1100);
+      }, 800);
     } catch (err) {
-      setMode('wallet');
-      setErrorMsg(err.message || 'Failed to connect wallet.');
+      setMode('wallet-step');
+      setErrorMsg(err.message || 'Failed to connect wallet. You can skip and connect later.');
     }
   };
+
+  // Skip wallet step — proceed directly to dashboard
+  const handleSkipWallet = () => {
+    setMode('success');
+    setTimeout(() => {
+      if (onConnected) onConnected('credentials', null, authenticatedUser);
+      handleClose();
+    }, 900);
+  };
+
 
   // Form Submit Handler (Sign Up / Sign In)
   const handleFormSubmit = async (e) => {
@@ -254,17 +222,13 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
           email: emailOrPhone,
           phone: phoneNumber,
           role,
-          walletAddress: prof?.wallet_address || account || '0x71C7...976F',
+          walletAddress: prof?.wallet_address || null,
           provider: 'supabase',
         };
 
         setAuthenticatedUser(userObj);
-        setMode('success');
-
-        setTimeout(() => {
-          if (onConnected) onConnected('credentials', userObj.walletAddress, userObj);
-          handleClose();
-        }, 1200);
+        // Show wallet connect step after successful sign-up
+        setMode('wallet-step');
       } catch (err) {
         console.error('Sign up error:', err);
         setMode('signup');
@@ -290,23 +254,26 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
         });
 
         const prof = res?.profile;
+        const resolvedRole = (
+          prof?.role ||
+          res?.data?.user?.user_metadata?.role ||
+          'buyer'
+        ).toLowerCase();
+
         const userObj = {
           id: res?.data?.user?.id,
-          name: prof?.name || emailOrPhone.split('@')[0],
+          name: prof?.name || res?.data?.user?.user_metadata?.name || emailOrPhone.split('@')[0],
           email: res?.data?.user?.email || emailOrPhone,
           phone: prof?.phone || '',
-          role: (prof?.role || role).toLowerCase(),
-          walletAddress: prof?.wallet_address || account || '0x71C7...976F',
+          role: resolvedRole,
+          walletAddress: prof?.wallet_address || null,
           provider: 'supabase',
         };
 
+        setRole(resolvedRole);
         setAuthenticatedUser(userObj);
-        setMode('success');
-
-        setTimeout(() => {
-          if (onConnected) onConnected('credentials', userObj.walletAddress, userObj);
-          handleClose();
-        }, 1200);
+        // Show wallet connect step after successful sign-in
+        setMode('wallet-step');
       } catch (err) {
         console.error('Sign in error:', err);
         setMode('signin');
@@ -383,54 +350,11 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
             </div>
           )}
 
-          {/* ──────────────────────────────────────────────────────────
-              QUICK DEMO LOGINS BAR (For 1-Click Evaluation)
-          ────────────────────────────────────────────────────────── */}
-          {(mode === 'signup' || mode === 'signin') && (
-            <div className="bg-gradient-to-r from-teal-50/70 via-slate-50 to-amber-50/70 p-3.5 rounded-2xl border border-teal-200/80 shadow-xs">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-1.5 text-xs font-bold text-[#3D5066]">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                  <span>1-Click Hackathon Demo Access</span>
-                </div>
-                <span className="text-[10px] font-mono text-teal-800 bg-teal-100/70 px-2 py-0.5 rounded font-bold uppercase">
-                  Supabase Live
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('buyer')}
-                  className="py-1.5 px-2 rounded-xl bg-white hover:bg-teal-50 border border-zinc-200 hover:border-teal-400 text-left transition-all text-xs cursor-pointer group"
-                >
-                  <div className="text-[10px] text-teal-700 font-mono font-bold uppercase flex items-center justify-between">
-                    <span>Buyer</span>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                  </div>
-                  <div className="text-[11px] font-bold text-slate-800 truncate">Arjun Mehta</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDemoLogin('seller')}
-                  className="py-1.5 px-2 rounded-xl bg-white hover:bg-slate-100 border border-zinc-200 hover:border-slate-400 text-left transition-all text-xs cursor-pointer group"
-                >
-                  <div className="text-[10px] text-slate-600 font-mono font-bold uppercase flex items-center justify-between">
-                    <span>Seller</span>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                  </div>
-                  <div className="text-[11px] font-bold text-slate-800 truncate">Apex Motors</div>
-                </button>
-              </div>
-              <p className="text-[10px] text-zinc-400 font-mono mt-2 text-center">
-                🔐 Authority accounts are provisioned by admin only
-              </p>
-            </div>
-          )}
 
           {/* ──────────────────────────────────────────────────────────
-              ROLE SELECTOR SECTION: Buyer | Seller | Authority
+              ROLE SELECTOR SECTION: Buyer | Seller | Authority (Sign Up Only)
           ────────────────────────────────────────────────────────── */}
-          {(mode === 'signup' || mode === 'signin') && (
+          {mode === 'signup' && (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="text-xs font-mono uppercase font-bold text-[#6E6259] tracking-wider">
@@ -646,7 +570,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                   <label className="text-xs font-semibold text-[#3D5066]">Password</label>
                   <button
                     type="button"
-                    onClick={() => alert('Demo tip: You can click the 1-Click Demo buttons above to log in instantly!')}
+                    onClick={() => alert('Please contact support or use the "Sign Up" flow to reset your password.')}
                     className="text-[11px] text-[#B89B5E] hover:underline cursor-pointer"
                   >
                     Forgot password?
@@ -670,7 +594,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
                 type="submit"
                 className="w-full py-3 px-4 rounded-xl bg-[#3D5066] hover:bg-[#B89B5E] text-white text-sm font-bold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-2 cursor-pointer"
               >
-                <span>Sign In as {roles.find((r) => r.id === role)?.title}</span>
+                <span>Sign In</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -689,7 +613,119 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
           )}
 
           {/* ──────────────────────────────────────────────────────────
-              MODE: WEB3 WALLET LIST
+              MODE: WALLET STEP (Post-Auth — Connect Your Wallet)
+          ────────────────────────────────────────────────────────── */}
+          {mode === 'wallet-step' && (
+            <div className="space-y-4">
+              {/* Greeting */}
+              {authenticatedUser && (
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center space-x-3">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    {authenticatedUser.name?.charAt(0) || '✓'}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-emerald-800">Signed in as {authenticatedUser.name}</p>
+                    <p className="text-[11px] text-emerald-600 capitalize font-mono">{authenticatedUser.role} account verified</p>
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <p className="text-xs font-mono uppercase text-[#6E6259] font-bold mb-0.5">Step 2: Connect Your Wallet</p>
+                <p className="text-[11px] text-zinc-500 leading-relaxed">
+                  Your Web3 wallet is required to sign escrow transactions, mint Vehicle Passports on Ethereum Sepolia, and authorize ownership transfers.
+                </p>
+              </div>
+
+              {/* 3 Wallet Options */}
+              <div className="space-y-2">
+                {/* MetaMask */}
+                <button
+                  type="button"
+                  onClick={() => handleWalletConnect('metamask')}
+                  className="w-full flex items-center space-x-3.5 p-3.5 rounded-2xl border border-amber-300 bg-amber-50/50 hover:border-amber-500 hover:bg-amber-50 transition-all text-left cursor-pointer group"
+                >
+                  <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0" fill="none">
+                    <rect width="40" height="40" rx="10" fill="#F6851B" fillOpacity="0.15" />
+                    <path d="M30.6 11.2L20.8 17.9L22.5 10.3L30.6 11.2Z" fill="#E4761B" />
+                    <path d="M9.4 11.2L17.5 10.3L19.2 17.9L9.4 11.2Z" fill="#E4761B" />
+                    <path d="M27.2 25.1L24.8 28.8L30 30.2L31.4 25.2L27.2 25.1Z" fill="#E4761B" />
+                    <path d="M8.6 25.2L10 30.2L15.2 28.8L12.8 25.1L8.6 25.2Z" fill="#E4761B" />
+                    <path d="M14.6 18.2L13.2 20.3L18.4 20.5L18.6 14.8L14.6 18.2Z" fill="#E4761B" />
+                    <path d="M25.4 18.2L21.4 14.8L21.6 20.5L26.8 20.3L25.4 18.2Z" fill="#E4761B" />
+                    <path d="M15.2 28.8L18.4 27.2L15.8 25.2L15.2 28.8Z" fill="#D7C1B3" />
+                    <path d="M24.8 28.8L24.2 25.2L21.6 27.2L24.8 28.8Z" fill="#D7C1B3" />
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-bold text-[#3D5066] group-hover:text-amber-700">MetaMask</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-amber-100 text-amber-800 border-amber-300">Recommended</span>
+                    </div>
+                    <p className="text-xs text-[#6E6259] mt-0.5">EVM browser extension — Sepolia testnet</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-amber-600 shrink-0 transition-colors" />
+                </button>
+
+                {/* WalletConnect */}
+                <button
+                  type="button"
+                  onClick={() => handleWalletConnect('walletconnect')}
+                  className="w-full flex items-center space-x-3.5 p-3.5 rounded-2xl border border-blue-200 bg-blue-50/30 hover:border-blue-400 hover:bg-blue-50 transition-all text-left cursor-pointer group"
+                >
+                  <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0" fill="none">
+                    <rect width="40" height="40" rx="10" fill="#3B99FC" fillOpacity="0.15" />
+                    <path d="M12 20 Q20 12 28 20 Q24 24 20 20 Q16 24 12 20Z" fill="#3B99FC" />
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-bold text-[#3D5066] group-hover:text-blue-700">WalletConnect</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-blue-100 text-blue-800 border-blue-300">Multi-Chain</span>
+                    </div>
+                    <p className="text-xs text-[#6E6259] mt-0.5">Scan QR with 100+ mobile wallets</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-blue-600 shrink-0 transition-colors" />
+                </button>
+
+                {/* Pera Wallet */}
+                <button
+                  type="button"
+                  onClick={() => handleWalletConnect('pera')}
+                  className="w-full flex items-center space-x-3.5 p-3.5 rounded-2xl border border-amber-200 bg-amber-50/30 hover:border-yellow-400 hover:bg-yellow-50 transition-all text-left cursor-pointer group"
+                >
+                  <svg viewBox="0 0 40 40" className="w-9 h-9 shrink-0" fill="none">
+                    <rect width="40" height="40" rx="10" fill="#FECC1B" />
+                    <path d="M10 28 L20 12 L30 28" stroke="#111" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="20" cy="20" r="3" fill="#111" />
+                  </svg>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-bold text-[#3D5066] group-hover:text-yellow-700">Pera Wallet</span>
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded border bg-yellow-100 text-yellow-800 border-yellow-300">Cross-Chain</span>
+                    </div>
+                    <p className="text-xs text-[#6E6259] mt-0.5">Algorand & cross-chain mobile wallet</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-zinc-300 group-hover:text-yellow-600 shrink-0 transition-colors" />
+                </button>
+              </div>
+
+              {/* Skip Option */}
+              <div className="pt-1 text-center">
+                <button
+                  type="button"
+                  onClick={handleSkipWallet}
+                  className="text-xs text-zinc-400 hover:text-zinc-600 font-semibold underline cursor-pointer transition-colors"
+                >
+                  Skip for now — I'll connect my wallet later →
+                </button>
+              </div>
+              <p className="text-[10px] text-zinc-400 font-mono text-center">
+                🔐 Non-custodial. Your wallet address will be saved to your carNodes profile.
+              </p>
+            </div>
+          )}
+
+          {/* ──────────────────────────────────────────────────────────
+              MODE: WEB3 WALLET LIST (standalone, for users already authed)
           ────────────────────────────────────────────────────────── */}
           {mode === 'wallet' && (
             <div className="space-y-3">
@@ -708,7 +744,7 @@ export default function LoginModal({ isOpen, onClose, onConnected, initialMode =
               {wallets.map((w) => (
                 <button
                   key={w.id}
-                  onClick={() => handleWalletSelect(w)}
+                  onClick={() => handleWalletConnect(w.id)}
                   className={`w-full flex items-center space-x-4 p-3.5 rounded-2xl border transition-all duration-200 text-left cursor-pointer group ${
                     w.id === 'metamask'
                       ? 'border-amber-300 bg-amber-50/40 hover:border-amber-500 hover:bg-amber-50'

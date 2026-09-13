@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
-import { useRole, ROLES } from '../context/RoleContext';
+import { useAuth } from '../context/AuthContext';
 
 export function Login() {
   const navigate = useNavigate();
-  const { setRole } = useRole();
+  const { signIn, role } = useAuth();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -19,78 +19,28 @@ export function Login() {
     setError('');
 
     if (!identifier.trim() || !password) {
-      setError('Please enter your email/mobile and password.');
+      setError('Please enter your email and password.');
       return;
     }
 
     setLoading(true);
 
     try {
-      // Attempt API login call to backend
-      const response = await fetch('http://localhost:5000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: identifier, password })
-      });
+      const res = await signIn({ email: identifier, password });
+      const userRole = (res?.profile?.role || 'buyer').toLowerCase();
 
-      const resData = await response.json();
-
-      if (response.ok && resData.success) {
-        const user = resData.data.user;
-        const userRole = (user.role || 'BUYER').toLowerCase();
-
-        localStorage.setItem('carnodes_token', resData.data.token);
-        localStorage.setItem('carnodes_user', JSON.stringify(user));
-        
-        // Update context role
-        setRole(userRole);
-
-        // Redirect based on role
-        if (userRole === 'authority') {
-          navigate('/authority');
-        } else if (userRole === 'seller') {
-          navigate('/create-listing');
-        } else {
-          navigate('/marketplace');
-        }
-        return;
+      // Redirect based on Supabase role
+      if (userRole === 'authority' || userRole === 'rto_admin') {
+        navigate('/');
+      } else if (userRole === 'seller' || userRole === 'dealer') {
+        navigate('/');
       } else {
-        // Fallback demo authentication if credentials fail or demo user
-        fallbackDemoLogin();
+        navigate('/');
       }
     } catch (err) {
-      // If backend server is unreachable, use fallback demo authentication
-      fallbackDemoLogin();
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fallbackDemoLogin = () => {
-    // Determine demo role from input or default to buyer
-    let userRole = 'buyer';
-    if (identifier.toLowerCase().includes('authority') || identifier.toLowerCase().includes('admin')) {
-      userRole = 'authority';
-    } else if (identifier.toLowerCase().includes('seller')) {
-      userRole = 'seller';
-    }
-
-    const demoUser = {
-      name: identifier.split('@')[0] || 'CarNodes User',
-      email: identifier,
-      role: userRole.toUpperCase()
-    };
-
-    localStorage.setItem('carnodes_token', 'demo_jwt_token_123');
-    localStorage.setItem('carnodes_user', JSON.stringify(demoUser));
-    setRole(userRole);
-
-    if (userRole === 'authority') {
-      navigate('/authority');
-    } else if (userRole === 'seller') {
-      navigate('/create-listing');
-    } else {
-      navigate('/marketplace');
     }
   };
 
