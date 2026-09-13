@@ -33,7 +33,7 @@ import {
 import GlobalVehicleCard from './GlobalVehicleCard';
 import { VEHICLES } from '../../data/vehicles';
 import { MOCK_BUYER_DATA } from '../../data/dashboardData';
-import { ETHERSCAN_BASE } from '../../contracts/addresses';
+import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../../contracts/addresses';
 import { useWallet } from '../../context/WalletContext';
 import { initiateBuyerEscrow } from '../../services/blockchainService';
 import { getAllVehicles } from '../../services/vehicleStore';
@@ -117,8 +117,16 @@ export default function BuyerDashboardView({
     handleAskPrompt(q);
   };
 
-  // Filtered vehicles for explorer
+  // Filtered vehicles for explorer — only show vehicles listed on marketplace
   const filteredVehicles = vehiclesData.filter((v) => {
+    // Check if vehicle has been approved and listed for sale by seller
+    const isLiveListing = v.listingStatus === 'Listed on Marketplace' || 
+                          v.listingStatus === 'Listed on Sepolia' || 
+                          v.listingStatus === 'Listed' ||
+                          (!v.listingStatus && v.id?.startsWith('CN-0')); // baseline cars
+
+    if (!isLiveListing) return false;
+
     const matchesSearch = searchQuery === '' || 
       (v.model && v.model.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (v.id && v.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
@@ -300,6 +308,38 @@ export default function BuyerDashboardView({
                   </div>
                   <div className="font-bold font-heading text-slate-900">{stg.title}</div>
                   <p className="text-[10px] text-slate-500 mt-1 leading-tight">{stg.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Deployed Smart Contracts */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 p-6 shadow-xs space-y-3">
+            <h3 className="text-sm font-heading font-bold text-slate-900 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-teal-600" />
+              Deployed Smart Contracts · Ethereum Sepolia
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+              {[
+                { label: 'VehiclePassport NFT', addr: CONTRACT_ADDRESSES.VehiclePassport },
+                { label: 'VehicleRegistry', addr: CONTRACT_ADDRESSES.VehicleRegistry },
+                { label: 'VehicleEscrow', addr: CONTRACT_ADDRESSES.VehicleEscrow },
+                { label: 'MockINR Token', addr: CONTRACT_ADDRESSES.MockINR }
+              ].map(c => (
+                <div key={c.label} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] uppercase text-slate-400 font-bold block">{c.label}</span>
+                    <span className="text-slate-800 font-bold truncate block">{c.addr.slice(0, 12)}...{c.addr.slice(-6)}</span>
+                  </div>
+                  <a
+                    href={`${ETHERSCAN_BASE}/address/${c.addr}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 text-teal-700 hover:text-teal-900 p-1"
+                    title="View on Etherscan"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
                 </div>
               ))}
             </div>
@@ -525,13 +565,40 @@ export default function BuyerDashboardView({
                   <strong className="text-teal-700">Ethereum Sepolia</strong>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">Token ID:</span>
-                  <strong className="text-slate-800">482910</strong>
+                  <span className="text-slate-500">Escrow Contract:</span>
+                  <a href={`${ETHERSCAN_BASE}/address/${CONTRACT_ADDRESSES.VehicleEscrow}`} target="_blank" rel="noopener noreferrer" className="text-teal-700 hover:underline">
+                    {CONTRACT_ADDRESSES.VehicleEscrow.slice(0,10)}...{CONTRACT_ADDRESSES.VehicleEscrow.slice(-4)}
+                  </a>
                 </div>
-                <div className="flex justify-between py-1 border-b border-slate-100">
-                  <span className="text-slate-500">IPFS Deed:</span>
-                  <strong className="text-slate-800">ipfs://bafy...1a2b</strong>
-                </div>
+                {selectedVehicle.metadataCID && (
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">IPFS Metadata:</span>
+                    <a href={`https://gateway.pinata.cloud/ipfs/${selectedVehicle.metadataCID}`} target="_blank" rel="noopener noreferrer" className="text-blue-700 hover:underline truncate max-w-[140px]">
+                      {selectedVehicle.metadataCID.slice(0, 16)}...
+                    </a>
+                  </div>
+                )}
+                {selectedVehicle.ipfsDocuments && Object.keys(selectedVehicle.ipfsDocuments).length > 0 && (
+                  <div className="pt-1 space-y-1">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold">IPFS Documents</span>
+                    {Object.entries(selectedVehicle.ipfsDocuments).map(([docType, cid]) => (
+                      <div key={docType} className="flex justify-between py-0.5">
+                        <span className="text-slate-500 capitalize">{docType}:</span>
+                        <a href={`https://gateway.pinata.cloud/ipfs/${cid}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate max-w-[120px]">
+                          {cid?.slice(0, 12)}...
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {selectedVehicle.txHash && (
+                  <div className="flex justify-between py-1 border-b border-slate-100">
+                    <span className="text-slate-500">Mint Tx:</span>
+                    <a href={`${ETHERSCAN_BASE}/tx/${selectedVehicle.txHash}`} target="_blank" rel="noopener noreferrer" className="text-teal-700 hover:underline truncate max-w-[120px]">
+                      {selectedVehicle.txHash.slice(0, 14)}...
+                    </a>
+                  </div>
+                )}
               </div>
             </div>
           </div>

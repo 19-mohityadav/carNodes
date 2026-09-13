@@ -28,16 +28,18 @@ import {
 } from 'lucide-react';
 import { MOCK_AUTHORITY_DATA } from '../../data/dashboardData';
 import { VEHICLES } from '../../data/vehicles';
-import { ETHERSCAN_BASE } from '../../contracts/addresses';
+import { ETHERSCAN_BASE, CONTRACT_ADDRESSES } from '../../contracts/addresses';
 import { useWallet } from '../../context/WalletContext';
-import { verifyVehicleOnChain } from '../../services/blockchainService';
+import { verifyVehicleOnChain, mintVehiclePassport } from '../../services/blockchainService';
 import {
   getVerificationQueue,
   updateQueueItemStatus,
   getAuthorityAuditTrail,
   addAuthorityAuditEntry,
-  updateVehicle
+  updateVehicle,
+  getAllVehicles
 } from '../../services/vehicleStore';
+import { ipfsUrl } from '../../services/ipfsService';
 
 export default function AuthorityDashboardView({
   activeTab,
@@ -96,11 +98,14 @@ export default function AuthorityDashboardView({
       setIsVerifying(true);
       try {
         let txRes = null;
+        const targetRecipient = selectedQueueItem.ownerAddress || account || '0x3D94A56Ec71c8901237A74801B5f6d899A2C0123';
         if (signer) {
-          txRes = await verifyVehicleOnChain({
+          txRes = await mintVehiclePassport({
             signer,
-            tokenId: 1,
-            vehicleName: selectedQueueItem.vehicleName,
+            toAddress: targetRecipient,
+            vin: selectedQueueItem.vin || `VIN-${Date.now()}`,
+            model: selectedQueueItem.vehicleName,
+            metadataCID: selectedQueueItem.metadataCID || 'bafybeirtoevidenceapprovedseal'
           });
         }
 
@@ -109,11 +114,17 @@ export default function AuthorityDashboardView({
         setDecisionSuccess('approve');
 
         // Update queue item
-        updateQueueItemStatus(selectedQueueItem.id, 'Verified', confirmedTx);
+        updateQueueItemStatus(selectedQueueItem.id, 'Verified & Minted', confirmedTx);
 
-        // Update vehicle in storage
+        // Update vehicle in storage — mark as Verified & Minted into seller's wallet!
+        // Seller can now list it on the marketplace!
         updateVehicle(selectedQueueItem.vehicleId, {
           verificationStatus: 'Verified',
+          mintStatus: 'Minted in Seller Wallet',
+          listingStatus: 'Ready to List',
+          tokenId: Math.floor(100 + Math.random() * 900),
+          mintTxHash: confirmedTx,
+          ownerAddress: targetRecipient,
           verifications: {
             owner: true,
             documents: true,
@@ -129,7 +140,7 @@ export default function AuthorityDashboardView({
         addAuthorityAuditEntry({
           id: `LOG-${Date.now().toString().slice(-5)}`,
           date: new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }),
-          action: 'Authority RTO Title Verification Seal',
+          action: 'Authority RTO Title Verification & Passport Mint',
           vehicle: selectedQueueItem.vehicleName,
           operator: 'Inspector R. Deshmukh (MH02 Node)',
           status: 'Confirmed On-Chain',
@@ -138,8 +149,8 @@ export default function AuthorityDashboardView({
         });
 
       } catch (err) {
-        console.error('Error signing verification on Sepolia:', err);
-        setVerifyError(err.reason || err.message || 'Verification could not be recorded on Sepolia.');
+        console.error('Error signing verification and minting on Sepolia:', err);
+        setVerifyError(err.reason || err.message || 'Verification & minting could not be recorded on Sepolia.');
       } finally {
         setIsVerifying(false);
       }
@@ -424,16 +435,59 @@ export default function AuthorityDashboardView({
                     </div>
                   </div>
 
-                  {/* Document Preview Snippet */}
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block mb-1">
-                      Submitted Title Document Preview
-                    </span>
-                    <div className="flex items-center space-x-2">
-                      <FileText className="w-4 h-4 text-teal-600" />
-                      <span className="font-semibold text-slate-700 text-xs">Form_23_RC_Book_Scan.pdf</span>
-                    </div>
-                  </div>
+                  {/* IPFS Documents from Seller */}
+                  {(() => {
+                    const allVehicles = getAllVehicles();
+                    const vehicle = allVehicles.find(v => v.id === selectedQueueItem.vehicleId);
+                    const ipfsDocs = vehicle?.ipfsDocuments || {};
+                    const metaCID = vehicle?.metadataCID;
+                    const hasIpfs = Object.keys(ipfsDocs).length > 0;
+                    return (
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
+                          {hasIpfs ? 'IPFS-Pinned Documents' : 'Submitted Documents'}
+                        </span>
+                        {hasIpfs ? (
+                          <div className="space-y-1.5">
+                            {Object.entries(ipfsDocs).map(([docType, cid]) => (
+                              <div key={docType} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
+                                <div className="flex items-center gap-2">
+                                  <FileText className="w-3.5 h-3.5 text-teal-600" />
+                                  <span className="font-semibold text-slate-700 text-[11px] capitalize">{docType}</span>
+                                </div>
+                                <a
+                                  href={ipfsUrl(cid)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] font-mono text-blue-700 hover:underline truncate max-w-[120px]"
+                                >
+                                  {cid?.slice(0, 14)}...
+                                </a>
+                              </div>
+                            ))}
+                            {metaCID && (
+                              <div className="flex items-center justify-between pt-1">
+                                <span className="text-[10px] font-bold text-teal-700 uppercase">Metadata CID</span>
+                                <a
+                                  href={ipfsUrl(metaCID)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] font-mono text-blue-700 hover:underline truncate max-w-[120px]"
+                                >
+                                  {metaCID?.slice(0, 14)}...
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-2">
+                            <FileText className="w-4 h-4 text-teal-600" />
+                            <span className="font-semibold text-slate-700 text-xs">Form_23_RC_Book_Scan.pdf</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* RIGHT (7 cols): Verification Checklist & Risk Assessment */}
@@ -526,10 +580,10 @@ export default function AuthorityDashboardView({
                   <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-300 space-y-2 font-mono text-xs">
                     <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
                       <ShieldCheck className="w-5 h-5 text-emerald-600" />
-                      <span>RTO Verification Stamp Sealed on Sepolia!</span>
+                      <span>Vehicle Verified & NFT Minted on Sepolia!</span>
                     </div>
                     <p className="text-emerald-700 font-sans text-xs">
-                      Official title seal and cryptographic evidence hash have been written to the Ethereum Sepolia Registry.
+                      Official RTO title seal approved and Vehicle Passport NFT minted directly to the seller's wallet (<span className="font-mono font-bold">{selectedQueueItem.ownerAddress ? selectedQueueItem.ownerAddress.slice(0, 10) + '...' : 'Seller Wallet'}</span>). The seller can now list this vehicle on the marketplace.
                     </p>
                     <div className="p-2.5 bg-white rounded-lg border border-emerald-200 flex items-center justify-between gap-2">
                       <span className="text-slate-800 break-all text-[11px] font-bold">{verifyTxHash}</span>
@@ -559,7 +613,7 @@ export default function AuthorityDashboardView({
                 ) : (
                   <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
                     <span className="text-[11px] font-mono text-slate-400">
-                      {isVerifying ? 'Signing on Ethereum Sepolia...' : 'Decision will be recorded to Sepolia Oracle'}
+                      {isVerifying ? 'Minting NFT to Seller on Sepolia...' : 'Approval will mint NFT directly to seller wallet'}
                     </span>
 
                     <div className="flex items-center space-x-3">
@@ -583,11 +637,11 @@ export default function AuthorityDashboardView({
                         className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs transition-all shadow-xs flex items-center space-x-1.5 cursor-pointer disabled:opacity-60"
                       >
                         {isVerifying ? (
-                          <span>Signing on Sepolia...</span>
+                          <span>Minting on Sepolia...</span>
                         ) : (
                           <>
                             <ShieldCheck className="w-4 h-4" />
-                            <span>Approve Vehicle</span>
+                            <span>Approve & Mint NFT to Seller</span>
                           </>
                         )}
                       </button>
