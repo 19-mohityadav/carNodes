@@ -71,10 +71,11 @@ export default function VehiclePassportSection({ activeCar }) {
         </div>
 
         {/* INTERACTIVE DIGITAL PASSPORT CONTAINER */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="max-w-4xl mx-auto">
 
-          {/* LEFT: TIMELINE & BADGES (Cols 1-7) */}
-          <div className="lg:col-span-7 space-y-6">
+          {/* Passport Content */}
+          <div className="space-y-6">
+
 
             {/* Passport Identity Header Card */}
             <div className="bg-white p-6 rounded-2xl border border-zinc-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
@@ -156,9 +157,8 @@ export default function VehiclePassportSection({ activeCar }) {
 
           </div>
 
-         
-
         </div>
+
 
       </div>
     </section>
