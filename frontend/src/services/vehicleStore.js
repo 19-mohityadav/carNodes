@@ -49,7 +49,11 @@ export function addCustomVehicle(newCar) {
       risk: 'LOW',
       riskScore: newCar.trustScore || 95,
       status: 'Pending',
-      documentsCount: 4,
+      documentsCount: newCar.ipfsDocuments ? Object.keys(newCar.ipfsDocuments).length : 4,
+      ipfsDocuments: newCar.ipfsDocuments || {},
+      metadataCID: newCar.metadataCID || null,
+      txHash: newCar.txHash || null,
+      ownerAddress: newCar.ownerAddress || '',
       checklist: {
         identityMatch: 'verified',
         registrationDoc: 'verified',
