@@ -60,11 +60,9 @@ export default function FooterCTA({ onOpenMarketplace, onOpenListModal, onOpenVe
               <span className="w-2 h-2 rounded-full bg-[#FF3B30]"></span>
             </div>
             <p className="text-zinc-400 leading-relaxed max-w-sm">
-              The Swiss Modernist Real-World Asset (RWA) automotive marketplace. Verified history, transparent AI valuation, and smart contract escrow on Algorand.
+              The Swiss Modernist Real-World Asset (RWA) automotive marketplace. Verified history, transparent AI valuation.
             </p>
-            <div className="text-[11px] font-mono text-zinc-500">
-              Contract Address: <span className="text-emerald-400 font-bold">0x89f4b...3a1c</span> (MainNet)
-            </div>
+            
           </div>
 
           {/* Navigation Links */}
@@ -74,7 +72,7 @@ export default function FooterCTA({ onOpenMarketplace, onOpenListModal, onOpenVe
               <li><a href="#hero" className="hover:text-white transition-colors">Showroom Stage</a></li>
               <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
               <li><a href="#passport-section" className="hover:text-white transition-colors">Digital Passport</a></li>
-              <li><a href="#escrow" className="hover:text-white transition-colors">Algorand Escrow</a></li>
+  
             </ul>
           </div>
 

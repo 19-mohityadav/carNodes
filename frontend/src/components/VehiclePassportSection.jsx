@@ -58,10 +58,7 @@ export default function VehiclePassportSection({ activeCar }) {
 
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white border border-zinc-300 text-xs font-mono text-[#B36B39] mb-4">
-            <FileCheck className="w-4 h-4" />
-            <span className="font-bold uppercase tracking-wider">CRYPTOGRAPHIC VEHICLE IDENTITY</span>
-          </div>
+          
 
           <h2 className="text-3xl sm:text-5xl font-extrabold uppercase tracking-tight text-[#111111] font-heading">
             Every Vehicle Has a Story. <br />

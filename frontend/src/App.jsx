@@ -3,10 +3,8 @@ import { VEHICLES } from './data/vehicles';
 import Navbar from './components/Navbar';
 import HeroShowroom from './components/HeroShowroom';
 import TrustStrip from './components/TrustStrip';
-import ComparisonMatrix from './components/ComparisonMatrix';
 import HowItWorks from './components/HowItWorks';
 import VehiclePassportSection from './components/VehiclePassportSection';
-import EscrowSection from './components/EscrowSection';
 import StakeholdersSection from './components/StakeholdersSection';
 import ImpactVisionSection from './components/ImpactVisionSection';
 import FooterCTA from './components/FooterCTA';
@@ -150,8 +148,6 @@ export default function App() {
         {/* 3. TRUST STRIP */}
         <TrustStrip />
 
-        {/* 4. COMPARISON MATRIX */}
-        <ComparisonMatrix />
 
         {/* 5. HOW IT WORKS */}
         <HowItWorks />
@@ -161,7 +157,7 @@ export default function App() {
 
 
         {/* 8. ESCROW SECTION */}
-        <EscrowSection onOpenWalletModal={() => handleOpenAuth('signin')} />
+  
 
         {/* 9. STAKEHOLDERS */}
         <StakeholdersSection
